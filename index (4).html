@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>회원 참여프로그램 공모</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root{
+    --brand:#2f7a6f; --brand-deep:#1f5850; --accent:#4fb3a1; --accent-soft:#e7f4f1;
+    --ink:#12302b; --muted:#5f716c; --line:#e2ece9; --bg:#f4f8f6; --card:#ffffff;
+    --warn:#c0553b; --gold:#b98a2e;
+    --r:16px; --shadow:0 1px 2px rgba(18,48,43,.04),0 8px 28px rgba(18,48,43,.06);
+    --font:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  button{font-family:inherit;cursor:pointer;border:none}
+  input,textarea,select{font-family:inherit;font-size:15px;width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);outline:none;transition:.15s}
+  input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  textarea{resize:vertical;min-height:88px;line-height:1.6}
+  label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 6px}
+  .req::after{content:" *";color:var(--warn)}
+
+  /* layout */
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  header.top{position:sticky;top:0;z-index:20;background:rgba(244,248,246,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em;cursor:pointer}
+  .brand .dot{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--brand),var(--accent));box-shadow:inset 0 0 0 3px rgba(255,255,255,.35)}
+  .brand small{font-weight:600;color:var(--muted);font-size:12px;display:block;letter-spacing:0}
+  .navlinks{display:flex;gap:4px}
+  .navlinks a{font-size:13px;font-weight:600;color:var(--muted);padding:7px 12px;border-radius:8px;text-decoration:none}
+  .navlinks a:hover{background:#fff;color:var(--brand)}
+
+  main{padding:38px 0 80px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px;padding:13px 22px;border-radius:11px;background:var(--brand);color:#fff;transition:.15s;box-shadow:var(--shadow)}
+  .btn:hover{background:var(--brand-deep);transform:translateY(-1px)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--line);box-shadow:none}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .btn.sm{padding:8px 14px;font-size:13px;border-radius:9px}
+  .btn.block{width:100%}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+  .pad{padding:26px}
+  .grid{display:grid;gap:16px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:600px){.row2{grid-template-columns:1fr}}
+
+  .eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  h1{font-size:32px;font-weight:800;letter-spacing:-.03em;margin:10px 0 8px;line-height:1.2}
+  h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 14px}
+  .lead{color:var(--muted);font-size:16px;max-width:600px}
+  .hint{font-size:13px;color:var(--muted);margin-top:6px}
+
+  /* stage timeline */
+  .timeline{display:flex;gap:0;margin:26px 0 8px;counter-reset:s}
+  .step{flex:1;position:relative;padding:14px 10px 0;text-align:center}
+  .step::before{counter-increment:s;content:counter(s);position:relative;z-index:2;display:grid;place-items:center;width:30px;height:30px;margin:0 auto 8px;border-radius:50%;background:#fff;border:2px solid var(--line);color:var(--muted);font-weight:800;font-size:13px}
+  .step::after{content:"";position:absolute;top:29px;left:-50%;width:100%;height:2px;background:var(--line);z-index:1}
+  .step:first-child::after{display:none}
+  .step .t{font-size:13px;font-weight:700;color:var(--muted)}
+  .step.done::before{background:var(--accent);border-color:var(--accent);color:#fff}
+  .step.done::after{background:var(--accent)}
+  .step.active::before{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 0 0 4px var(--accent-soft)}
+  .step.active .t{color:var(--brand)}
+
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 11px;border-radius:100px;background:var(--accent-soft);color:var(--brand-deep)}
+  .badge .pip{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+
+  .item{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff;transition:.15s}
+  .item h3{margin:0 0 4px;font-size:16px;font-weight:800;letter-spacing:-.01em}
+  .item .meta{font-size:13px;color:var(--muted);margin-bottom:10px}
+  .item p{margin:6px 0;font-size:14px;color:#33453f}
+  .kv{font-size:13px;color:var(--muted)}
+  .kv b{color:var(--ink);font-weight:700}
+
+  /* selectable ballot card */
+  .pick{cursor:pointer}
+  .pick.on{border-color:var(--brand);background:var(--accent-soft);box-shadow:0 0 0 3px var(--accent-soft)}
+  .pick .check{float:right;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;color:transparent;font-weight:900}
+  .pick.on .check{background:var(--brand);border-color:var(--brand);color:#fff}
+
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line)}
+  th{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr.fin{background:var(--accent-soft)}
+  .chk{width:18px;height:18px;accent-color:var(--brand)}
+
+  .rankcard{display:flex;align-items:center;gap:16px;padding:18px 20px;border:1px solid var(--line);border-radius:14px;background:#fff}
+  .rankcard .no{width:44px;height:44px;flex:none;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff;background:var(--muted)}
+  .rankcard.r1 .no{background:linear-gradient(135deg,#d4a53a,#b98a2e)}
+  .rankcard.r2 .no{background:linear-gradient(135deg,#9aa7a3,#7d8b86)}
+  .rankcard.r3 .no{background:linear-gradient(135deg,#c98f5e,#a9764a)}
+  .rankcard .score{margin-left:auto;text-align:right}
+  .rankcard .score b{font-size:22px;font-weight:800}
+
+  .note{background:var(--accent-soft);border:1px solid #cfe8e1;border-radius:12px;padding:14px 16px;font-size:14px;color:var(--brand-deep)}
+  .err{background:#fbeeea;border:1px solid #f0cabd;color:var(--warn);border-radius:10px;padding:12px 14px;font-size:14px;margin:10px 0}
+  .ok{background:#eaf6f0;border:1px solid #bfe4d0;color:#1c6b45;border-radius:10px;padding:12px 14px;font-size:14px;margin:10px 0}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  .spacer{flex:1}
+  .center{text-align:center}
+  .muted{color:var(--muted)}
+  .hidden{display:none!important}
+  .skeleton{color:var(--muted);text-align:center;padding:40px 0}
+  .spin{display:inline-block;width:18px;height:18px;border:2px solid var(--accent-soft);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .score-in{width:74px;text-align:center;font-weight:700}
+  footer{border-top:1px solid var(--line);padding:24px 0;color:var(--muted);font-size:13px}
+  footer a{color:var(--brand);text-decoration:none}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand" onclick="go('')">
+      <span class="dot"></span>
+      <span>참여프로그램 공모<small>서울특별시사회복지사협회</small></span>
+    </div>
+    <nav class="navlinks">
+      <a onclick="go('judge')">심사위원</a>
+      <a onclick="go('admin')">관리자</a>
+    </nav>
+  </div>
+</header>
+
+<main><div class="wrap" id="view"><div class="skeleton"><span class="spin"></span> 불러오는 중…</div></div></main>
+
+<footer><div class="wrap">
+  서울특별시사회복지사협회 · 회원 참여프로그램 공모 시스템 &nbsp;|&nbsp;
+  문의는 <a onclick="go('admin')">관리자 페이지</a>에서 확인하세요.
+</div></footer>
+
+<script>
+/* ================= 설정 ================= */
+const CONFIG = {
+  // 배포한 Apps Script 웹앱 URL을 여기에 붙여넣으세요 (…/exec)
+  GAS_URL: "여기에_APPS_SCRIPT_웹앱_URL_붙여넣기",
+};
+
+/* ================= 통신 ================= */
+async function apiGet(action){
+  const r = await fetch(CONFIG.GAS_URL + "?action=" + encodeURIComponent(action));
+  return r.json();
+}
+async function apiPost(payload){
+  const r = await fetch(CONFIG.GAS_URL, {
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"}, // CORS preflight 회피
+    body: JSON.stringify(payload),
+  });
+  return r.json();
+}
+const $ = (s,el=document)=>el.querySelector(s);
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nl = s => esc(s).replace(/\n/g,"<br>");
+
+let STATE = { config:null, judge:null, admin:null, member:null };
+
+/* ================= 라우팅 ================= */
+function go(route){ location.hash = route ? "#"+route : "#"; }
+window.addEventListener("hashchange", render);
+window.addEventListener("DOMContentLoaded", render);
+
+async function render(){
+  const route = location.hash.replace("#","");
+  const view = $("#view");
+  if (CONFIG.GAS_URL.indexOf("붙여넣기") >= 0){
+    view.innerHTML = `<div class="card pad"><div class="err">먼저 <b>index.html</b> 상단 <code>CONFIG.GAS_URL</code>에 Apps Script 웹앱 주소를 입력하세요.</div></div>`;
+    return;
+  }
+  try{
+    if (!STATE.config) STATE.config = (await apiGet("config")).config;
+  }catch(e){ view.innerHTML = `<div class="card pad"><div class="err">서버 연결에 실패했습니다. GAS_URL과 배포 상태를 확인해 주세요.</div></div>`; return; }
+
+  if (route === "apply") return viewApply(view);
+  if (route === "vote")  return viewVote(view);
+  if (route === "judge") return viewJudge(view);
+  if (route === "admin") return viewAdmin(view);
+  return viewHome(view);
+}
+
+function stageTimeline(cur){
+  const steps=["신청","심사","투표","종료"];
+  const labels={"신청":"프로그램 신청","심사":"심사위원 심사","투표":"회원 투표","종료":"결과 발표"};
+  const idx=steps.indexOf(cur);
+  return `<div class="timeline">${steps.map((s,i)=>`
+    <div class="step ${i<idx?"done":""} ${i===idx?"active":""}"><div class="t">${labels[s]}</div></div>`).join("")}</div>`;
+}
+
+/* ================= 홈 ================= */
+function viewHome(view){
+  const c = STATE.config;
+  const stage = c.단계;
+  let cta = "";
+  if (stage==="신청") cta = `<button class="btn" onclick="go('apply')">프로그램 신청하기 →</button>`;
+  else if (stage==="투표") cta = `<button class="btn" onclick="go('vote')">회원 투표 참여하기 →</button>`;
+  else if (stage==="종료") cta = `<button class="btn" onclick="go('vote')">최종 결과 보기 →</button>`;
+  else cta = `<span class="badge"><span class="pip"></span>현재 심사위원 심사가 진행 중입니다</span>`;
+
+  view.innerHTML = `
+    <div class="eyebrow">회원 참여프로그램 공모</div>
+    <h1>${esc(c.행사명)}</h1>
+    <p class="lead">회원이 제안하고, 회원이 함께 뽑습니다. 심사위원 심사와 회원 온라인 투표를 절반씩 반영해 최종 프로그램을 선정합니다.</p>
+    ${stageTimeline(stage)}
+    <div class="card pad" style="margin-top:22px">
+      <div class="toolbar" style="margin:0">
+        <span class="badge"><span class="pip"></span>현재 단계 · ${esc({"신청":"프로그램 신청 접수","심사":"심사위원 심사","투표":"회원 온라인 투표","종료":"결과 발표"}[stage])}</span>
+        <span class="spacer"></span>
+      </div>
+      <div style="margin-top:16px">${cta}</div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:16px">
+      <div class="card pad">
+        <h2>선정 방식</h2>
+        <p class="kv">1차 심사위원 심사로 <b>상위 10개</b>를 가립니다.</p>
+        <p class="kv">본선 10개는 회원 온라인 투표에 부쳐집니다.</p>
+        <p class="kv"><b>심사 50% + 투표 50%</b>로 최종 <b>상위 3개</b>를 선정합니다.</p>
+      </div>
+      <div class="card pad">
+        <h2>투표 자격</h2>
+        <p class="kv">올해 <b>회비를 납부한 회원</b>이 투표할 수 있습니다.</p>
+        <p class="kv">성함과 생년월일 6자리로 확인합니다.</p>
+        <p class="kv">투표는 <b>1인 1회</b>만 참여할 수 있습니다.</p>
+      </div>
+    </div>`;
+}
+
+/* ================= 신청 폼 ================= */
+function viewApply(view){
+  if (STATE.config.단계 !== "신청"){
+    view.innerHTML = `<div class="card pad center"><h2>신청이 마감되었습니다</h2><p class="muted">현재는 신청 접수 기간이 아닙니다.</p><button class="btn ghost" onclick="go('')">처음으로</button></div>`;
+    return;
+  }
+  const org=[
+    ["기관명","input",true,"신청기관명"],
+    ["대표자","input",true,"기관 대표자"],
+    ["고유번호","input",false,"사업자등록번호 또는 고유번호"],
+    ["기관주소","input",false,""],
+    ["기관연락처","input",false,"기관 대표 전화"],
+    ["사업담당자","input",true,"실무 담당자 성함"],
+    ["담당자연락처","input",true,"휴대폰 또는 이메일"],
+    ["운영법인","input",false,"해당하는 경우 법인명"],
+  ];
+  const plan=[
+    ["사업명","input",true,""],
+    ["사업의필요성","textarea",true,"대상의 문제·욕구와 사업의 필요성"],
+    ["서비스지역","input",false,"사업 수행 지역"],
+    ["서비스대상및실인원","textarea",true,"주요 대상과 예상 실인원"],
+    ["사업목적및목표","textarea",false,"사업의 목적과 측정 가능한 목표"],
+    ["사업내용","textarea",true,"세부사업·활동·추진일정 등 구체적으로"],
+    ["기대효과","textarea",false,"사업을 통해 기대되는 변화·성과"],
+    ["총사업비","input",false,"예: 5,000,000"],
+    ["신청금액","input",false,"공모 신청 금액"],
+    ["예산계획","textarea",false,"항목별 산출근거"],
+  ];
+  const secTag = (n,t)=>`<span style="display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;font-weight:800;font-size:14px;margin-right:8px;vertical-align:-5px">${n}</span><h2 style="display:inline">${t}</h2>`;
+  const field = a=>{const [k,type,req,ph]=a; return `
+    <div>
+      <label class="${req?'req':''}" for="f_${k}">${labelOf(k)}</label>
+      ${type==="textarea" ? `<textarea id="f_${k}" placeholder="${ph}"></textarea>` : `<input id="f_${k}" placeholder="${ph}" />`}
+    </div>`;};
+  view.innerHTML = `
+    <div class="eyebrow">STEP 1 · 신청</div>
+    <h1>배분사업 신청서</h1>
+    <p class="lead">서울 사회복지공동모금회 배분사업 신청서 양식에 따라 작성합니다. <b>*</b> 표시는 필수 항목입니다.</p>
+    <div class="card pad" style="margin-top:20px">
+      <div id="applyMsg"></div>
+      ${secTag(1,"기관 현황")}
+      <div class="grid" style="margin-top:14px">${org.map(field).join("")}</div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:26px 0">
+      ${secTag(2,"사업 계획")}
+      <div class="grid" style="margin-top:14px">${plan.map(field).join("")}</div>
+      <div style="margin-top:22px;display:flex;gap:10px">
+        <button class="btn" id="applyBtn" onclick="submitApply()">신청서 제출</button>
+        <button class="btn ghost" onclick="go('')">취소</button>
+      </div>
+    </div>`;
+}
+function labelOf(k){return {
+  고유번호:"고유번호(사업자등록번호)", 기관연락처:"기관 연락처", 사업담당자:"사업 담당자",
+  담당자연락처:"담당자 연락처", 운영법인:"운영법인(해당 시)",
+  사업의필요성:"사업의 필요성", 서비스지역:"서비스 지역", 서비스대상및실인원:"서비스 대상 및 실인원",
+  사업목적및목표:"사업 목적 및 목표", 사업내용:"사업 내용",
+  총사업비:"총사업비(원)", 신청금액:"신청금액(원)", 예산계획:"예산계획(산출근거)",
+}[k]||k;}
+
+async function submitApply(){
+  const keys=["기관명","대표자","고유번호","기관주소","기관연락처","사업담당자","담당자연락처","운영법인","사업명","사업의필요성","서비스지역","서비스대상및실인원","사업목적및목표","사업내용","기대효과","총사업비","신청금액","예산계획"];
+  const p={action:"submitApplication"};
+  keys.forEach(k=>p[k]=$("#f_"+k).value.trim());
+  const btn=$("#applyBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 제출 중';
+  const r=await apiPost(p);
+  btn.disabled=false; btn.textContent="신청서 제출";
+  const m=$("#applyMsg");
+  if(r.ok){
+    $("#view").innerHTML=`<div class="card pad center" style="padding:48px 26px">
+      <div class="badge" style="margin:0 auto"><span class="pip"></span>접수 완료</div>
+      <h1 style="margin-top:16px">신청이 접수되었습니다</h1>
+      <p class="muted">접수번호 <b>${esc(r.id)}</b> · 심사 결과는 협회 안내를 확인해 주세요.</p>
+      <button class="btn" onclick="go('')">처음으로</button>
+    </div>`;
+  }else{ m.innerHTML=`<div class="err">${esc(r.error||"제출에 실패했습니다.")}</div>`; window.scrollTo(0,0); }
+}
+
+/* ================= 심사위원 ================= */
+function viewJudge(view){
+  if (STATE.judge) return renderJudgeList(view);
+  view.innerHTML = `
+    <div class="eyebrow">STEP 2 · 심사</div>
+    <h1>심사위원 로그인</h1>
+    <p class="lead">배정받은 심사위원 코드를 입력하세요. 각 프로그램에 0~100점을 부여합니다.</p>
+    <div class="card pad" style="margin-top:20px;max-width:420px">
+      <div id="jMsg"></div>
+      <label class="req">심사위원 코드</label>
+      <input id="jcode" placeholder="예: 1001" onkeydown="if(event.key==='Enter')judgeLogin()" />
+      <button class="btn block" style="margin-top:16px" id="jbtn" onclick="judgeLogin()">로그인</button>
+    </div>`;
+}
+async function judgeLogin(){
+  const code=$("#jcode").value.trim();
+  const btn=$("#jbtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 확인 중';
+  const r=await apiPost({action:"judgeLogin",code});
+  btn.disabled=false; btn.textContent="로그인";
+  if(r.ok){ STATE.judge=r; renderJudgeList($("#view")); }
+  else $("#jMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`;
+}
+function renderJudgeList(view){
+  const j=STATE.judge;
+  const scored=j.items.filter(i=>i.내점수!=="").length;
+  view.innerHTML=`
+    <div class="toolbar">
+      <div><div class="eyebrow">심사</div><h1 style="margin:6px 0 0">${esc(j.심사위원명)} 심사위원</h1></div>
+      <span class="spacer"></span>
+      <span class="badge"><span class="pip"></span>${scored} / ${j.items.length} 채점 완료</span>
+      <button class="btn ghost sm" onclick="STATE.judge=null;render()">로그아웃</button>
+    </div>
+    <p class="lead" style="margin-bottom:18px">각 프로그램에 <b>0~100점</b>을 입력하면 자동 저장됩니다. 언제든 다시 수정할 수 있습니다.</p>
+    <div class="grid" id="jlist">
+      ${j.items.map((it,idx)=>judgeCard(it,idx)).join("")}
+    </div>`;
+}
+function judgeCard(it,idx){
+  const money = (it.총사업비||it.신청금액) ? `<p class="kv"><b>총사업비</b> ${esc(it.총사업비||"-")} · <b>신청금액</b> ${esc(it.신청금액||"-")}</p>` : "";
+  return `<div class="item" id="jc_${idx}">
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div style="flex:1">
+        <h3>${esc(it.사업명)}</h3>
+        <div class="meta">${esc(it.기관명)} · 대표 ${esc(it.대표자)}${it.사업담당자?` · 담당 ${esc(it.사업담당자)}`:""}${it.서비스지역?` · ${esc(it.서비스지역)}`:""}</div>
+        ${it.사업의필요성?`<p><b class="kv">사업의 필요성</b><br>${nl(it.사업의필요성)}</p>`:""}
+        ${it.서비스대상및실인원?`<p><b class="kv">서비스 대상 및 실인원</b><br>${nl(it.서비스대상및실인원)}</p>`:""}
+        ${it.사업목적및목표?`<p><b class="kv">사업 목적 및 목표</b><br>${nl(it.사업목적및목표)}</p>`:""}
+        <p><b class="kv">사업 내용</b><br>${nl(it.사업내용)}</p>
+        ${it.기대효과?`<p><b class="kv">기대효과</b><br>${nl(it.기대효과)}</p>`:""}
+        ${money}
+        ${it.예산계획?`<p><b class="kv">예산계획</b><br>${nl(it.예산계획)}</p>`:""}
+      </div>
+      <div class="center" style="flex:none;width:120px">
+        <label>점수 (0~100)</label>
+        <input class="score-in" type="number" min="0" max="100" value="${it.내점수}" id="sc_${idx}"
+          onchange="saveScore('${it.신청ID}',${idx})" />
+        <div class="hint" id="scmsg_${idx}">&nbsp;</div>
+      </div>
+    </div>
+  </div>`;
+}
+async function saveScore(appId,idx){
+  const v=$("#sc_"+idx).value;
+  const msg=$("#scmsg_"+idx);
+  if(v==="") { msg.textContent=""; return; }
+  msg.innerHTML='<span class="spin"></span>';
+  const r=await apiPost({action:"saveScore",judge:STATE.judge.심사위원명,appId,score:Number(v)});
+  msg.innerHTML = r.ok ? '<span style="color:#1c6b45;font-weight:700">✓ 저장됨</span>' : `<span style="color:var(--warn)">${esc(r.error)}</span>`;
+}
+
+/* ================= 관리자 ================= */
+function viewAdmin(view){
+  if (STATE.admin) return renderAdmin(view);
+  view.innerHTML=`
+    <div class="eyebrow">관리자</div>
+    <h1>관리자 로그인</h1>
+    <div class="card pad" style="margin-top:20px;max-width:420px">
+      <div id="aMsg"></div>
+      <label class="req">관리자 비밀번호</label>
+      <input id="apw" type="password" onkeydown="if(event.key==='Enter')adminLogin()" />
+      <button class="btn block" style="margin-top:16px" id="abtn" onclick="adminLogin()">로그인</button>
+    </div>`;
+}
+let ADMIN_PW="";
+async function adminLogin(){
+  ADMIN_PW=$("#apw").value;
+  const btn=$("#abtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 확인 중';
+  const r=await apiPost({action:"adminData",password:ADMIN_PW});
+  btn.disabled=false; btn.textContent="로그인";
+  if(r.ok){ STATE.admin=r; renderAdmin($("#view")); }
+  else $("#aMsg").innerHTML=`<div class="err">${esc(r.error||"로그인 실패")}</div>`;
+}
+async function reloadAdmin(){
+  const r=await apiPost({action:"adminData",password:ADMIN_PW});
+  if(r.ok){ STATE.admin=r; renderAdmin($("#view")); }
+}
+function renderAdmin(view){
+  const d=STATE.admin, c=d.config;
+  const N=c.본선개수;
+  const stages=["신청","심사","투표","종료"];
+  view.innerHTML=`
+    <div class="toolbar">
+      <div><div class="eyebrow">관리자</div><h1 style="margin:6px 0 0">${esc(c.행사명)}</h1></div>
+      <span class="spacer"></span>
+      <button class="btn ghost sm" onclick="reloadAdmin()">새로고침</button>
+      <button class="btn ghost sm" onclick="STATE.admin=null;render()">로그아웃</button>
+    </div>
+
+    <div class="card pad" style="margin-bottom:16px">
+      <h2>단계 관리</h2>
+      ${stageTimeline(c.단계)}
+      <div class="toolbar" style="margin:16px 0 0">
+        ${stages.map(s=>`<button class="btn ${s===c.단계?'':'ghost'} sm" onclick="setStage('${s}')">${{"신청":"신청 접수","심사":"심사 진행","투표":"투표 개시","종료":"결과 발표"}[s]}</button>`).join("")}
+      </div>
+      <div id="stageMsg"></div>
+    </div>
+
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="toolbar" style="margin-bottom:6px">
+        <h2 style="margin:0">1차 심사 집계 · 본선 ${N}개 확정</h2>
+        <span class="spacer"></span>
+        <span class="badge">심사위원 ${d.judgeCount}명 · 신청 ${d.applications.length}건</span>
+      </div>
+      <p class="hint">체크박스로 본선 진출 <b>${N}개</b>를 선택한 뒤 확정하세요. 평균점수 내림차순으로 정렬됩니다.</p>
+      <div style="overflow:auto;margin-top:12px">
+      <table>
+        <thead><tr>
+          <th style="width:34px">본선</th><th>사업명</th><th>신청기관</th>
+          <th class="num">채점</th><th class="num">평균</th><th class="num">총점</th>
+        </tr></thead>
+        <tbody>
+        ${d.applications.map(a=>`<tr class="${a.본선?'fin':''}">
+          <td><input type="checkbox" class="chk fchk" value="${esc(a.신청ID)}" ${a.본선?'checked':''}></td>
+          <td><b>${esc(a.사업명)}</b></td>
+          <td>${esc(a.기관명)}<div class="hint">대표 ${esc(a.대표자)}${a.사업담당자?` · 담당 ${esc(a.사업담당자)}`:""}</div></td>
+          <td class="num">${a.채점수}</td>
+          <td class="num"><b>${a.평균}</b></td>
+          <td class="num">${a.총점}</td>
+        </tr>`).join("")}
+        </tbody>
+      </table>
+      </div>
+      <div class="toolbar" style="margin:16px 0 0">
+        <button class="btn sm" onclick="confirmFinalists(${N})">선택한 항목 본선 확정</button>
+        <span class="hint" id="finMsg">현재 본선 ${d.finalists.length}개 확정됨</span>
+      </div>
+    </div>
+
+    <div class="card pad">
+      <div class="toolbar" style="margin-bottom:6px">
+        <h2 style="margin:0">최종 결과 (심사 50% + 투표 50%)</h2>
+        <span class="spacer"></span>
+        <span class="badge">총 투표수 ${d.voteTotal}표</span>
+      </div>
+      ${renderResultsBlock(d.results)}
+    </div>`;
+}
+function renderResultsBlock(res){
+  if(!res||!res.length) return `<p class="muted" style="margin-top:10px">본선을 확정하면 결과가 계산됩니다.</p>`;
+  const top3=res.slice(0,3);
+  return `
+    <div class="grid" style="margin:14px 0 20px">
+      ${top3.map(r=>`<div class="rankcard r${r.순위}">
+        <div class="no">${r.순위}</div>
+        <div><b>${esc(r.사업명)}</b><div class="hint">${esc(r.기관명)}${r.대표자?` · 대표 ${esc(r.대표자)}`:""}</div></div>
+        <div class="score"><b>${r.최종점수}</b><div class="hint">심사 ${r.심사점수} + 투표 ${r.투표점수}</div></div>
+      </div>`).join("")}
+    </div>
+    <div style="overflow:auto">
+    <table>
+      <thead><tr><th class="num">순위</th><th>사업명</th><th class="num">심사평균</th><th class="num">심사점수</th><th class="num">득표수</th><th class="num">투표점수</th><th class="num">최종점수</th></tr></thead>
+      <tbody>${res.map(r=>`<tr class="${r.순위<=3?'fin':''}">
+        <td class="num">${r.순위}</td><td>${esc(r.사업명)}</td>
+        <td class="num">${r.심사평균}</td><td class="num">${r.심사점수}</td>
+        <td class="num">${r.득표수}</td><td class="num">${r.투표점수}</td>
+        <td class="num"><b>${r.최종점수}</b></td>
+      </tr>`).join("")}</tbody>
+    </table></div>`;
+}
+async function setStage(stage){
+  const r=await apiPost({action:"setStage",password:ADMIN_PW,stage});
+  if(r.ok){ STATE.config=null; STATE.admin.config.단계=stage; reloadAdmin(); }
+  else $("#stageMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`;
+}
+async function confirmFinalists(N){
+  const ids=[...document.querySelectorAll(".fchk:checked")].map(c=>c.value);
+  const msg=$("#finMsg");
+  if(ids.length!==N && !confirm(`본선 개수(${N}개)와 다릅니다. 선택한 ${ids.length}개로 확정할까요?`)) return;
+  msg.innerHTML='<span class="spin"></span> 저장 중';
+  const r=await apiPost({action:"setFinalists",password:ADMIN_PW,ids});
+  if(r.ok){ reloadAdmin(); } else msg.innerHTML=`<span style="color:var(--warn)">${esc(r.error)}</span>`;
+}
+
+/* ================= 회원 투표 ================= */
+function viewVote(view){
+  const stage=STATE.config.단계;
+  if(stage==="종료") return renderFinalPublic(view);
+  if(stage!=="투표"){
+    view.innerHTML=`<div class="card pad center"><h2>투표 기간이 아닙니다</h2><p class="muted">회원 투표가 열리면 이곳에서 참여할 수 있습니다.</p><button class="btn ghost" onclick="go('')">처음으로</button></div>`;
+    return;
+  }
+  if(!STATE.member) return renderVoteAuth(view);
+  return renderBallot(view);
+}
+function renderVoteAuth(view){
+  view.innerHTML=`
+    <div class="eyebrow">STEP 3 · 회원 투표</div>
+    <h1>본인 확인</h1>
+    <p class="lead">올해 회비를 납부한 회원만 투표할 수 있습니다. 성함과 생년월일 6자리로 확인합니다.</p>
+    <div class="card pad" style="margin-top:20px;max-width:440px">
+      <div id="vMsg"></div>
+      <div class="grid">
+        <div><label class="req">성함</label><input id="vname" placeholder="홍길동" /></div>
+        <div><label class="req">생년월일 6자리</label><input id="vbirth" placeholder="예: 901231" maxlength="6" inputmode="numeric" /></div>
+      </div>
+      <button class="btn block" style="margin-top:16px" id="vbtn" onclick="memberVerify()">확인하고 투표하기</button>
+      <p class="hint">투표는 1인 1회만 참여할 수 있으며, 입력하신 정보는 자격 확인 용도로만 사용됩니다.</p>
+    </div>`;
+}
+async function memberVerify(){
+  const name=$("#vname").value.trim(), birth=$("#vbirth").value.replace(/\D/g,"");
+  const btn=$("#vbtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 확인 중';
+  const r=await apiPost({action:"verifyMember",name,birth});
+  btn.disabled=false; btn.textContent="확인하고 투표하기";
+  if(r.ok){ STATE.member={name,birth}; renderBallot($("#view")); }
+  else $("#vMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`;
+}
+async function renderBallot(view){
+  view.innerHTML=`<div class="skeleton"><span class="spin"></span> 본선 프로그램을 불러오는 중…</div>`;
+  const r=await apiGet("ballot");
+  const items=r.items||[];
+  view.innerHTML=`
+    <div class="toolbar"><div><div class="eyebrow">회원 투표</div><h1 style="margin:6px 0 0">가장 지지하는 프로그램 1개</h1></div></div>
+    <p class="lead" style="margin-bottom:8px">본선 진출 ${items.length}개 중 <b>딱 하나</b>를 선택해 주세요. 제출 후에는 변경할 수 없습니다.</p>
+    <div id="vMsg2"></div>
+    <div class="grid" style="margin-top:16px" id="ballot">
+      ${items.map(it=>`<div class="item pick" data-id="${esc(it.신청ID)}" onclick="pickVote(this)">
+        <div class="check">✓</div>
+        <h3>${esc(it.사업명)}</h3>
+        <div class="meta">${esc(it.기관명)}${it.대표자?` · 대표 ${esc(it.대표자)}`:""}${it.서비스대상및실인원?` · 대상 ${esc(it.서비스대상및실인원)}`:""}</div>
+        <p>${nl(it.사업내용)}</p>
+        ${it.기대효과?`<p class="kv"><b>기대효과</b> ${nl(it.기대효과)}</p>`:""}
+      </div>`).join("")}
+    </div>
+    <div style="position:sticky;bottom:16px;margin-top:20px">
+      <button class="btn block" id="voteBtn" disabled onclick="castVote()">투표하기</button>
+    </div>`;
+}
+let PICKED=null;
+function pickVote(el){
+  document.querySelectorAll("#ballot .pick").forEach(p=>p.classList.remove("on"));
+  el.classList.add("on"); PICKED=el.dataset.id;
+  $("#voteBtn").disabled=false;
+}
+async function castVote(){
+  if(!PICKED) return;
+  if(!confirm("선택한 프로그램에 투표하시겠습니까? 제출 후 변경할 수 없습니다.")) return;
+  const btn=$("#voteBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 제출 중';
+  const r=await apiPost({action:"submitVote",name:STATE.member.name,birth:STATE.member.birth,appId:PICKED});
+  if(r.ok){
+    $("#view").innerHTML=`<div class="card pad center" style="padding:48px 26px">
+      <div class="badge" style="margin:0 auto"><span class="pip"></span>투표 완료</div>
+      <h1 style="margin-top:16px">소중한 한 표 감사합니다</h1>
+      <p class="muted">최종 결과는 협회 안내와 이 페이지에서 확인하실 수 있습니다.</p>
+      <button class="btn" onclick="STATE.member=null;go('')">처음으로</button>
+    </div>`;
+  }else{ btn.disabled=false; btn.textContent="투표하기"; $("#vMsg2").innerHTML=`<div class="err">${esc(r.error)}</div>`; window.scrollTo(0,0); }
+}
+
+/* ================= 공개 최종결과(종료 단계) ================= */
+async function renderFinalPublic(view){
+  view.innerHTML=`<div class="skeleton"><span class="spin"></span> 결과를 불러오는 중…</div>`;
+  const r=await apiGet("results");
+  const res=r.results||[];
+  const top3=res.slice(0,3);
+  view.innerHTML=`
+    <div class="eyebrow">최종 결과</div>
+    <h1>선정된 참여프로그램</h1>
+    <p class="lead">심사위원 심사 50%와 회원 투표 50%를 반영한 최종 결과입니다.</p>
+    <div class="grid" style="margin:22px 0">
+      ${top3.map(r=>`<div class="rankcard r${r.순위}">
+        <div class="no">${r.순위}</div>
+        <div><b style="font-size:17px">${esc(r.사업명)}</b><div class="hint">${esc(r.기관명)}${r.대표자?` · 대표 ${esc(r.대표자)}`:""}</div></div>
+        <div class="score"><b>${r.최종점수}</b><div class="hint">최종점수</div></div>
+      </div>`).join("")}
+    </div>
+    <button class="btn ghost" onclick="go('')">처음으로</button>`;
+}
+</script>
+</body>
+</html>
