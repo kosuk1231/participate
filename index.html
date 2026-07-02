@@ -240,14 +240,12 @@ function viewApply(view){
     return;
   }
   const org=[
-    ["기관명","input",true,"신청기관명"],
-    ["대표자","input",true,"기관 대표자"],
-    ["고유번호","input",false,"사업자등록번호 또는 고유번호"],
-    ["기관주소","input",false,""],
-    ["기관연락처","input",false,"기관 대표 전화"],
-    ["사업담당자","input",true,"실무 담당자 성함"],
-    ["담당자연락처","input",true,"휴대폰 또는 이메일"],
-    ["운영법인","input",false,"해당하는 경우 법인명"],
+    ["성함","input",true,"신청자 성함"],
+    ["소속","input",false,"소속 기관/단체"],
+    ["직책","input",false,"직책"],
+    ["핸드폰번호","input",true,"010-0000-0000"],
+    ["이메일","input",true,"example@email.com"],
+    ["생년월일","input",true,"예: 901111"],
   ];
   const plan=[
     ["사업명","input",true,""],
@@ -265,7 +263,7 @@ function viewApply(view){
   const field = a=>{const [k,type,req,ph]=a; return `
     <div>
       <label class="${req?'req':''}" for="f_${k}">${labelOf(k)}</label>
-      ${type==="textarea" ? `<textarea id="f_${k}" placeholder="${ph}"></textarea>` : `<input id="f_${k}" placeholder="${ph}" />`}
+      ${type==="textarea" ? `<textarea id="f_${k}" placeholder="${ph}"></textarea>` : `<input id="f_${k}" placeholder="${ph}" ${k==='생년월일'?'maxlength="6" inputmode="numeric"':''} />`}
     </div>`;};
   view.innerHTML = `
     <div class="eyebrow">STEP 1 · 신청</div>
@@ -273,7 +271,7 @@ function viewApply(view){
     <p class="lead">서울 사회복지공동모금회 배분사업 신청서 양식에 따라 작성합니다. <b>*</b> 표시는 필수 항목입니다.</p>
     <div class="card pad" style="margin-top:20px">
       <div id="applyMsg"></div>
-      ${secTag(1,"기관 현황")}
+      ${secTag(1,"신청자 정보")}
       <div class="grid" style="margin-top:14px">${org.map(field).join("")}</div>
       <hr style="border:none;border-top:1px solid var(--line);margin:26px 0">
       ${secTag(2,"사업 계획")}
@@ -285,15 +283,15 @@ function viewApply(view){
     </div>`;
 }
 function labelOf(k){return {
-  고유번호:"고유번호(사업자등록번호)", 기관연락처:"기관 연락처", 사업담당자:"사업 담당자",
-  담당자연락처:"담당자 연락처", 운영법인:"운영법인(해당 시)",
+  성함:"성함", 소속:"소속", 직책:"직책",
+  핸드폰번호:"핸드폰 번호", 이메일:"이메일 주소", 생년월일:"생년월일 앞자리(예: 901111)",
   사업의필요성:"사업의 필요성", 서비스지역:"서비스 지역", 서비스대상및실인원:"서비스 대상 및 실인원",
   사업목적및목표:"사업 목적 및 목표", 사업내용:"사업 내용",
   총사업비:"총사업비(원)", 신청금액:"신청금액(원)", 예산계획:"예산계획(산출근거)",
 }[k]||k;}
 
 async function submitApply(){
-  const keys=["기관명","대표자","고유번호","기관주소","기관연락처","사업담당자","담당자연락처","운영법인","사업명","사업의필요성","서비스지역","서비스대상및실인원","사업목적및목표","사업내용","기대효과","총사업비","신청금액","예산계획"];
+  const keys=["성함","소속","직책","핸드폰번호","이메일","생년월일","사업명","사업의필요성","서비스지역","서비스대상및실인원","사업목적및목표","사업내용","기대효과","총사업비","신청금액","예산계획"];
   const p={action:"submitApplication"};
   keys.forEach(k=>p[k]=$("#f_"+k).value.trim());
   const btn=$("#applyBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 제출 중';
@@ -353,7 +351,7 @@ function judgeCard(it,idx){
     <div style="display:flex;gap:14px;align-items:flex-start">
       <div style="flex:1">
         <h3>${esc(it.사업명)}</h3>
-        <div class="meta">${esc(it.기관명)} · 대표 ${esc(it.대표자)}${it.사업담당자?` · 담당 ${esc(it.사업담당자)}`:""}${it.서비스지역?` · ${esc(it.서비스지역)}`:""}</div>
+        <div class="meta">${esc(it.성함)}${it.소속?` · ${esc(it.소속)}`:""}${it.직책?` · ${esc(it.직책)}`:""}${it.서비스지역?` · ${esc(it.서비스지역)}`:""}</div>
         ${it.사업의필요성?`<p><b class="kv">사업의 필요성</b><br>${nl(it.사업의필요성)}</p>`:""}
         ${it.서비스대상및실인원?`<p><b class="kv">서비스 대상 및 실인원</b><br>${nl(it.서비스대상및실인원)}</p>`:""}
         ${it.사업목적및목표?`<p><b class="kv">사업 목적 및 목표</b><br>${nl(it.사업목적및목표)}</p>`:""}
@@ -437,14 +435,14 @@ function renderAdmin(view){
       <div style="overflow:auto;margin-top:12px">
       <table>
         <thead><tr>
-          <th style="width:34px">본선</th><th>사업명</th><th>신청기관</th>
+          <th style="width:34px">본선</th><th>사업명</th><th>신청자</th>
           <th class="num">채점</th><th class="num">평균</th><th class="num">총점</th>
         </tr></thead>
         <tbody>
         ${d.applications.map(a=>`<tr class="${a.본선?'fin':''}">
           <td><input type="checkbox" class="chk fchk" value="${esc(a.신청ID)}" ${a.본선?'checked':''}></td>
           <td><b>${esc(a.사업명)}</b></td>
-          <td>${esc(a.기관명)}<div class="hint">대표 ${esc(a.대표자)}${a.사업담당자?` · 담당 ${esc(a.사업담당자)}`:""}</div></td>
+          <td>${esc(a.성함)}<div class="hint">${esc(a.소속||"")}${a.직책?` · ${esc(a.직책)}`:""}</div></td>
           <td class="num">${a.채점수}</td>
           <td class="num"><b>${a.평균}</b></td>
           <td class="num">${a.총점}</td>
@@ -474,7 +472,7 @@ function renderResultsBlock(res){
     <div class="grid" style="margin:14px 0 20px">
       ${top3.map(r=>`<div class="rankcard r${r.순위}">
         <div class="no">${r.순위}</div>
-        <div><b>${esc(r.사업명)}</b><div class="hint">${esc(r.기관명)}${r.대표자?` · 대표 ${esc(r.대표자)}`:""}</div></div>
+        <div><b>${esc(r.사업명)}</b><div class="hint">${esc(r.성함)}${r.소속?` · ${esc(r.소속)}`:""}</div></div>
         <div class="score"><b>${r.최종점수}</b><div class="hint">심사 ${r.심사점수} + 투표 ${r.투표점수}</div></div>
       </div>`).join("")}
     </div>
@@ -549,7 +547,7 @@ async function renderBallot(view){
       ${items.map(it=>`<div class="item pick" data-id="${esc(it.신청ID)}" onclick="pickVote(this)">
         <div class="check">✓</div>
         <h3>${esc(it.사업명)}</h3>
-        <div class="meta">${esc(it.기관명)}${it.대표자?` · 대표 ${esc(it.대표자)}`:""}${it.서비스대상및실인원?` · 대상 ${esc(it.서비스대상및실인원)}`:""}</div>
+        <div class="meta">${esc(it.성함)}${it.소속?` · ${esc(it.소속)}`:""}${it.서비스대상및실인원?` · 대상 ${esc(it.서비스대상및실인원)}`:""}</div>
         <p>${nl(it.사업내용)}</p>
         ${it.기대효과?`<p class="kv"><b>기대효과</b> ${nl(it.기대효과)}</p>`:""}
       </div>`).join("")}
@@ -592,7 +590,7 @@ async function renderFinalPublic(view){
     <div class="grid" style="margin:22px 0">
       ${top3.map(r=>`<div class="rankcard r${r.순위}">
         <div class="no">${r.순위}</div>
-        <div><b style="font-size:17px">${esc(r.사업명)}</b><div class="hint">${esc(r.기관명)}${r.대표자?` · 대표 ${esc(r.대표자)}`:""}</div></div>
+        <div><b style="font-size:17px">${esc(r.사업명)}</b><div class="hint">${esc(r.성함)}${r.소속?` · ${esc(r.소속)}`:""}</div></div>
         <div class="score"><b>${r.최종점수}</b><div class="hint">최종점수</div></div>
       </div>`).join("")}
     </div>
