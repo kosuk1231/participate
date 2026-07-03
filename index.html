@@ -85,6 +85,33 @@
   .pick .check{float:right;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;color:transparent;font-weight:900}
   .pick.on .check{background:var(--brand);border-color:var(--brand);color:#fff}
 
+  /* 포스트잇 카드 덱 (회원 투표) */
+  .deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:26px;align-items:start;margin-top:22px;padding:10px 6px 6px}
+  .note{position:relative;border-radius:3px;padding:30px 22px 20px;cursor:pointer;color:#1f2b28;
+    box-shadow:0 8px 18px rgba(18,48,43,.16),0 2px 4px rgba(18,48,43,.10);
+    transition:transform .18s ease, box-shadow .18s ease}
+  .note:nth-child(5n+1){background:#fdf3c0;transform:rotate(-1.5deg)}
+  .note:nth-child(5n+2){background:#d6f1e2;transform:rotate(1.1deg)}
+  .note:nth-child(5n+3){background:#ffdfe6;transform:rotate(-0.7deg)}
+  .note:nth-child(5n+4){background:#dbeaff;transform:rotate(1.6deg)}
+  .note:nth-child(5n+5){background:#ecdcff;transform:rotate(-1.1deg)}
+  .note:hover{transform:rotate(0) translateY(-5px);box-shadow:0 18px 34px rgba(18,48,43,.22);z-index:2}
+  .note.on{transform:rotate(0) translateY(-3px);box-shadow:0 20px 40px rgba(47,122,111,.30);outline:3px solid var(--brand);z-index:3}
+  .note .pin{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;
+    background:radial-gradient(circle at 34% 30%,#fff 0 12%,#e0574f 46%,#a5322c 100%);box-shadow:0 3px 5px rgba(0,0,0,.32)}
+  .note .check{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:50%;border:2px solid rgba(0,0,0,.18);
+    background:rgba(255,255,255,.55);display:grid;place-items:center;color:transparent;font-weight:900;font-size:14px;transition:.15s}
+  .note.on .check{background:var(--brand);border-color:var(--brand);color:#fff}
+  .note h3{display:inline;margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.55;
+    background:linear-gradient(transparent 62%, rgba(0,0,0,.07) 0)}
+  .note .who{margin:12px 0 14px;font-size:13px;font-weight:700;color:#3c4a46;opacity:.85}
+  .note .nf{margin:9px 0}
+  .note .lbl{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;
+    background:rgba(0,0,0,.09);color:#2a3835;margin-bottom:4px}
+  .note .nt{display:block;font-size:13.5px;line-height:1.55;color:#28322f}
+  .note .budget{display:flex;gap:16px;flex-wrap:wrap;margin-top:15px;padding-top:12px;
+    border-top:1px dashed rgba(0,0,0,.16);font-size:12.5px;font-weight:700;color:#2a3835}
+
   table{width:100%;border-collapse:collapse;font-size:14px}
   th,td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line)}
   th{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
@@ -160,6 +187,7 @@ async function apiPost(payload){
 const $ = (s,el=document)=>el.querySelector(s);
 const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const nl = s => esc(s).replace(/\n/g,"<br>");
+const fmtWon = v => { const n=String(v==null?"":v).replace(/[^\d]/g,""); return n ? Number(n).toLocaleString("ko-KR")+"원" : ""; };
 
 let STATE = { config:null, judge:null, admin:null, member:null };
 
@@ -539,28 +567,35 @@ async function renderBallot(view){
   view.innerHTML=`<div class="skeleton"><span class="spin"></span> 본선 프로그램을 불러오는 중…</div>`;
   const r=await apiGet("ballot");
   const items=r.items||[];
+  const nf=(l,v)=>v?`<div class="nf"><span class="lbl">${l}</span><span class="nt">${nl(v)}</span></div>`:"";
   view.innerHTML=`
     <div class="toolbar"><div><div class="eyebrow">회원 투표</div><h1 style="margin:6px 0 0">가장 지지하는 프로그램 1개</h1></div></div>
-    <p class="lead" style="margin-bottom:8px">본선 진출 ${items.length}개 중 <b>딱 하나</b>를 선택해 주세요. 제출 후에는 변경할 수 없습니다.</p>
+    <p class="lead" style="margin-bottom:4px">본선 진출 ${items.length}개 중 <b>딱 하나</b>를 골라 붙여 주세요. 카드를 눌러 선택하고, 아래 버튼으로 제출합니다. 제출 후에는 변경할 수 없습니다.</p>
     <div id="vMsg2"></div>
-    <div class="grid" style="margin-top:16px" id="ballot">
-      ${items.map(it=>`<div class="item pick" data-id="${esc(it.신청ID)}" onclick="pickVote(this)">
+    <div class="deck" id="ballot">
+      ${items.map(it=>`<div class="note" data-id="${esc(it.신청ID)}" onclick="pickVote(this)" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pickVote(this);}">
+        <span class="pin"></span>
         <div class="check">✓</div>
         <h3>${esc(it.사업명)}</h3>
-        <div class="meta">${esc(it.성함)}${it.소속?` · ${esc(it.소속)}`:""}${it.서비스대상및실인원?` · 대상 ${esc(it.서비스대상및실인원)}`:""}</div>
-        <p>${nl(it.사업내용)}</p>
-        ${it.기대효과?`<p class="kv"><b>기대효과</b> ${nl(it.기대효과)}</p>`:""}
+        <div class="who">${esc(it.성함)}${it.소속?` · ${esc(it.소속)}`:""}${it.직책?` · ${esc(it.직책)}`:""}</div>
+        ${nf("필요성", it.사업의필요성)}
+        ${nf("대상·인원", it.서비스대상및실인원)}
+        ${nf("지역", it.서비스지역)}
+        ${nf("목적·목표", it.사업목적및목표)}
+        ${nf("사업내용", it.사업내용)}
+        ${nf("기대효과", it.기대효과)}
+        ${(fmtWon(it.총사업비)||fmtWon(it.신청금액))?`<div class="budget"><span>총사업비 ${fmtWon(it.총사업비)||"-"}</span><span>신청금액 ${fmtWon(it.신청금액)||"-"}</span></div>`:""}
       </div>`).join("")}
     </div>
-    <div style="position:sticky;bottom:16px;margin-top:20px">
+    <div style="position:sticky;bottom:16px;margin-top:24px">
       <button class="btn block" id="voteBtn" disabled onclick="castVote()">투표하기</button>
     </div>`;
 }
 let PICKED=null;
 function pickVote(el){
-  document.querySelectorAll("#ballot .pick").forEach(p=>p.classList.remove("on"));
+  document.querySelectorAll("#ballot .note").forEach(p=>p.classList.remove("on"));
   el.classList.add("on"); PICKED=el.dataset.id;
-  $("#voteBtn").disabled=false;
+  const b=$("#voteBtn"); b.disabled=false; b.textContent="선택한 프로그램에 투표하기";
 }
 async function castVote(){
   if(!PICKED) return;
