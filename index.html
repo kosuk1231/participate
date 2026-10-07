@@ -195,13 +195,34 @@
 <script>
 /* ================= 설정 ================= */
 const CONFIG = {
-  GAS_URL: "https://script.google.com/macros/s/AKfycbwA_sVU_qRBUM16f-DiQBwM8_WiPhVtMZ054sS7gtU93x0mF3Wht0HAqYhKSWspJAx6/exec",   // 배포한 Apps Script 웹앱 URL(…/exec)
+  GAS_URL: "https://script.google.com/macros/s/AKfycbwA_sVU_qRBUM16f-DiQBwM8_WiPhVtMZ054sS7gtU93x0mF3Wht0HAqYhKSWspJAx6/exec",   // 배포한 Apps Script 웹앱 URL(…/exec) — 접수·심사·관리자
+  // 회원투표 전용 Supabase (동시접속 대응). 비우면 투표도 Apps Script('투표' 시트)로 처리됩니다.
+  SUPABASE_URL: "",        // 예: https://xxxx.supabase.co
+  SUPABASE_ANON_KEY: "",   // anon(public) 키만! service_role 키는 절대 넣지 마세요
   NOTICE_URL: "",   // 공고문 보기 링크(비우면 버튼 숨김)
   DOC_URL: "",      // 공문 다운로드 링크(비우면 버튼 숨김)
   PERIOD: "2026. 10. 7.(수) ~ 11. 6.(금)",
   CONTACT: "회원조직팀 유예리 070-5155-2112 · vgyu1016@sasw.or.kr",
 };
 const DEMO = CONFIG.GAS_URL.indexOf("붙여넣기") >= 0;
+const SUPA = !DEMO && !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY);
+const BUSY_MSG = "접속이 많아 처리가 지연되고 있습니다. 잠시 후 다시 시도해 주세요.";
+
+/* ---- Supabase REST (anon) : 투표 경로는 Apps Script를 거치지 않음 ---- */
+const SB_HEADERS = ()=>({ "apikey":CONFIG.SUPABASE_ANON_KEY, "Authorization":"Bearer "+CONFIG.SUPABASE_ANON_KEY, "Content-Type":"application/json" });
+async function sbGet(path){
+  const r=await fetch(CONFIG.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/"+path,{headers:SB_HEADERS()});
+  if(!r.ok) throw new Error("Supabase 읽기 실패 "+r.status);
+  return r.json();
+}
+async function sbRpc(fn,params){
+  try{
+    const r=await fetch(CONFIG.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:SB_HEADERS(),body:JSON.stringify(params)});
+    const data=await r.json().catch(()=>null);
+    if(!r.ok) return {ok:false,error:(data&&data.message)||("요청 실패 "+r.status)};
+    return data||{ok:false,error:"응답이 없습니다."};
+  }catch(e){ return {ok:false,error:"네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."}; }
+}
 
 /* ================= 분야 안내 데이터 ================= */
 const FIELDS = [
@@ -255,8 +276,29 @@ const LABEL = {
 const NUM = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪"];
 
 /* ================= 통신 ================= */
-async function apiGet(action){ if(DEMO) return mockApi(action,{}); const r=await fetch(CONFIG.GAS_URL+"?action="+encodeURIComponent(action)); return r.json(); }
-async function apiPost(payload){ if(DEMO) return mockApi(payload.action,payload); const r=await fetch(CONFIG.GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)}); return r.json(); }
+// Apps Script 호출: 동시실행 초과 시 HTML 오류 페이지가 오므로 JSON 파싱 실패를 감지해 3회까지 재시도(백오프)
+async function gasCall(doFetch){
+  let lastErr=null;
+  for(let i=0;i<3;i++){
+    try{
+      const r=await doFetch(); const t=await r.text();
+      try{ return JSON.parse(t); }catch(e){ lastErr=new Error("non-json"); }
+    }catch(e){ lastErr=e; }
+    await new Promise(res=>setTimeout(res,700*(i+1)+Math.random()*500));
+  }
+  return {ok:false,error:BUSY_MSG,_busy:true};
+}
+async function apiGet(action){ if(DEMO) return mockApi(action,{}); return gasCall(()=>fetch(CONFIG.GAS_URL+"?action="+encodeURIComponent(action))); }
+async function apiPost(payload){ if(DEMO) return mockApi(payload.action,payload); return gasCall(()=>fetch(CONFIG.GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})); }
+
+// 공개 설정(단계·행사명): Supabase 연동 시 Supabase에서 읽어 Apps Script 부하를 피함
+async function loadConfig(){
+  if(SUPA){
+    try{ const rows=await sbGet("mpb_settings?id=eq.1&select=stage,event_name,finalist_count");
+      if(rows&&rows[0]) return {단계:rows[0].stage||"신청",행사명:rows[0].event_name||"회원참여예산제",본선개수:rows[0].finalist_count||5}; }catch(e){}
+  }
+  const r=await apiGet("config"); if(!r.ok) throw new Error(r.error||"config"); return r.config;
+}
 const $=(s,el=document)=>el.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const nl=s=>esc(s).replace(/\n/g,"<br>");
@@ -268,8 +310,8 @@ window.addEventListener("hashchange",render);
 window.addEventListener("DOMContentLoaded",()=>{ if(DEMO) $("#demoBar").classList.remove("hidden"); render(); });
 async function render(){
   const route=location.hash.replace("#",""), view=$("#view");
-  try{ if(!STATE.config) STATE.config=(await apiGet("config")).config; }
-  catch(e){ view.innerHTML=`<div class="card pad"><div class="err">서버 연결에 실패했습니다. GAS_URL과 배포 상태를 확인해 주세요.</div></div>`; return; }
+  try{ if(!STATE.config) STATE.config=await loadConfig(); }
+  catch(e){ view.innerHTML=`<div class="card pad"><div class="err">${esc(BUSY_MSG)}</div><button class="btn ghost sm" onclick="STATE.config=null;render()">다시 시도</button></div>`; return; }
   if(route==="apply") return viewApply(view);
   if(route==="vote") return viewVote(view);
   if(route==="judge") return viewJudge(view);
@@ -595,7 +637,13 @@ function renderAdmin(view){
   view.innerHTML=`<div class="toolbar"><div><div class="eyebrow">관리자</div><h1 style="margin:6px 0 0">${esc(c.행사명)}</h1></div><span class="spacer"></span>
       <button class="btn ghost sm" onclick="exportExcel()">엑셀 다운로드</button><button class="btn ghost sm" onclick="reloadAdmin()">새로고침</button><button class="btn ghost sm" onclick="STATE.admin=null;render()">로그아웃</button></div>
     <div class="card pad" style="margin-bottom:16px"><h2>단계 관리</h2>${stageTimeline(c.단계)}
-      <div class="toolbar" style="margin:16px 0 0">${stages.map(s=>`<button class="btn ${s===c.단계?'':'ghost'} sm" onclick="setStage('${s}')">${{"신청":"제안 접수","심사":"심사 진행","투표":"투표 개시","종료":"결과 발표"}[s]}</button>`).join("")}</div><div id="stageMsg"></div></div>
+      <div class="toolbar" style="margin:16px 0 0">${stages.map(s=>`<button class="btn ${s===c.단계?'':'ghost'} sm" onclick="setStage('${s}')">${{"신청":"제안 접수","심사":"심사 진행","투표":"투표 개시","종료":"결과 발표"}[s]}</button>`).join("")}</div><div id="stageMsg"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)">
+        <div class="toolbar" style="margin:0 0 6px"><b style="font-size:14px">회원투표 서버 (Supabase)</b>
+          <span class="badge" style="background:${d.supabase?'#eaf6f0':'#fbeeea'};color:${d.supabase?'#1c6b45':'var(--warn)'}">${d.supabase?'연동됨 · 투표는 Supabase가 처리':'미연동 · 투표도 Apps Script가 처리(동시접속 취약)'}</span></div>
+        <p class="hint" style="margin:0 0 10px">본선 ${d.finalists.length}건 · 회원명단 ${d.memberCount}명. 「투표 개시」를 누르면 자동 동기화되며, 명단을 고친 뒤에는 수동 동기화를 눌러 주세요. 투표가 끝나면 기록을 시트로 가져와 보관할 수 있습니다.</p>
+        <div class="toolbar" style="margin:0"><button class="btn ghost sm" onclick="syncSupabase()" ${d.supabase?'':'disabled'}>Supabase 동기화</button><button class="btn ghost sm" onclick="importVotes()" ${d.supabase?'':'disabled'}>투표 기록 시트로 가져오기</button><span class="hint" id="syncMsg" style="margin:0"></span></div>
+      </div></div>
     <div class="card pad" style="margin-bottom:16px">
       <div class="toolbar" style="margin-bottom:6px"><h2 style="margin:0">참여위원회 심사 집계 · 본선 ${N}건 확정</h2><span class="spacer"></span><span class="badge">심사위원 ${d.judgeCount}명 · 제안 ${d.applications.length}건</span></div>
       <p class="hint">체크박스로 본선 진출 <b>${N}건</b>을 선택한 뒤 확정하세요. 평균점수 내림차순으로 정렬됩니다.</p>
@@ -614,12 +662,32 @@ function renderResultsBlock(res){
     <div style="overflow:auto"><table><thead><tr><th class="num">순위</th><th>제안 사업명</th><th class="num">심사평균</th><th class="num">심사점수</th><th class="num">득표수</th><th class="num">투표점수</th><th class="num">최종</th></tr></thead>
     <tbody>${res.map(r=>`<tr class="${r.시상?'fin':''}"><td class="num">${r.순위}</td><td>${esc(r.제안사업명)}</td><td class="num">${r.심사평균}</td><td class="num">${r.심사점수}</td><td class="num">${r.득표수}</td><td class="num">${r.투표점수}</td><td class="num"><b>${r.최종점수}</b></td></tr>`).join("")}</tbody></table></div>`;
 }
-async function setStage(stage){ const r=await apiPost({action:"setStage",password:ADMIN_PW,stage}); if(r.ok){ STATE.config=null; reloadAdmin(); } else $("#stageMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`; }
+let ADMIN_NOTE="";
+async function setStage(stage){
+  const m=$("#stageMsg"); m.innerHTML='<div class="hint"><span class="spin"></span> 단계 전환 및 동기화 중…</div>';
+  const r=await apiPost({action:"setStage",password:ADMIN_PW,stage});
+  if(r.ok){ STATE.config=null; ADMIN_NOTE=r.note||""; await reloadAdmin(); if(ADMIN_NOTE){ const s=$("#syncMsg"); if(s) s.innerHTML=`<span style="color:${/실패/.test(ADMIN_NOTE)?'var(--warn)':'#1c6b45'}">${esc(ADMIN_NOTE)}</span>`; } }
+  else m.innerHTML=`<div class="err">${esc(r.error)}</div>`;
+}
 async function confirmFinalists(N){
   const ids=[...document.querySelectorAll(".fchk:checked")].map(c=>c.value), msg=$("#finMsg");
   if(ids.length!==N && !confirm(`본선 건수(${N}건)와 다릅니다. 선택한 ${ids.length}건으로 확정할까요?`)) return;
   msg.innerHTML='<span class="spin"></span> 저장 중';
-  const r=await apiPost({action:"setFinalists",password:ADMIN_PW,ids}); if(r.ok) reloadAdmin(); else msg.innerHTML=`<span style="color:var(--warn)">${esc(r.error)}</span>`;
+  const r=await apiPost({action:"setFinalists",password:ADMIN_PW,ids});
+  if(r.ok){ await reloadAdmin(); if(r.note){ const s=$("#syncMsg"); if(s) s.innerHTML=`<span style="color:${/실패/.test(r.note)?'var(--warn)':'#1c6b45'}">${esc(r.note)}</span>`; } }
+  else msg.innerHTML=`<span style="color:var(--warn)">${esc(r.error)}</span>`;
+}
+async function syncSupabase(){
+  const s=$("#syncMsg"); s.innerHTML='<span class="spin"></span> 동기화 중…';
+  const r=await apiPost({action:"syncSupabase",password:ADMIN_PW});
+  s.innerHTML=r.ok?`<span style="color:#1c6b45">${esc(r.msg)}</span>`:`<span style="color:var(--warn)">${esc(r.error)}</span>`;
+  if(r.ok) setTimeout(reloadAdmin,800);
+}
+async function importVotes(){
+  if(!confirm("Supabase의 투표 기록을 '투표' 시트로 가져옵니다. 시트의 기존 투표 내용은 덮어씁니다. 진행할까요?")) return;
+  const s=$("#syncMsg"); s.innerHTML='<span class="spin"></span> 가져오는 중…';
+  const r=await apiPost({action:"importVotes",password:ADMIN_PW});
+  s.innerHTML=r.ok?`<span style="color:#1c6b45">${esc(r.msg)}</span>`:`<span style="color:var(--warn)">${esc(r.error)}</span>`;
 }
 async function exportExcel(){
   const r=await apiPost({action:"exportData",password:ADMIN_PW}); if(!r.ok){ alert(r.error||"다운로드 실패"); return; }
@@ -650,12 +718,18 @@ function renderVoteAuth(view){
 }
 async function memberVerify(){
   const name=$("#vname").value.trim(), birth=$("#vbirth").value.replace(/\D/g,""); const btn=$("#vbtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 확인 중';
-  const r=await apiPost({action:"verifyMember",name,birth}); btn.disabled=false; btn.textContent="확인하고 투표하기";
+  const r=SUPA ? await sbRpc("mpb_check_member",{p_name:name,p_birth:birth}) : await apiPost({action:"verifyMember",name,birth});
+  btn.disabled=false; btn.textContent="확인하고 투표하기";
   if(r.ok){ STATE.member={name,birth}; renderBallot($("#view")); } else $("#vMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`;
 }
 async function renderBallot(view){
   view.innerHTML=`<div class="skeleton"><span class="spin"></span> 후보 제안을 불러오는 중…</div>`;
-  const r=await apiGet("ballot"); const items=r.items||[];
+  let items=[];
+  if(SUPA){
+    try{ const rows=await sbGet("mpb_finalists?select=app_id,title,field,summary,target,content,effect&order=sort_order.asc");
+      items=rows.map(x=>({신청ID:x.app_id,제안사업명:x.title,제안분야:x.field,한줄소개:x.summary,참여대상및예상인원:x.target,주요내용및운영방법:x.content,기대효과:x.effect})); }
+    catch(e){ view.innerHTML=`<div class="card pad"><div class="err">${esc(BUSY_MSG)}</div><button class="btn ghost sm" onclick="renderBallot($('#view'))">다시 시도</button></div>`; return; }
+  }else{ const r=await apiGet("ballot"); if(!r.ok){ view.innerHTML=`<div class="card pad"><div class="err">${esc(r.error||BUSY_MSG)}</div><button class="btn ghost sm" onclick="renderBallot($('#view'))">다시 시도</button></div>`; return; } items=r.items||[]; }
   const nf=(l,v)=>v?`<div class="nf"><span class="lbl">${l}</span><span class="nt">${nl(v)}</span></div>`:"";
   view.innerHTML=`<div class="toolbar"><div><div class="eyebrow">회원 투표</div><h1 style="margin:6px 0 0">가장 지지하는 제안 1개</h1></div></div>
     <p class="lead" style="margin-bottom:4px">참여위원회가 선정한 최종 후보 ${items.length}건 중 <b>딱 하나</b>를 골라 주세요. 카드를 눌러 선택하고 아래 버튼으로 제출합니다. 제출 후에는 변경할 수 없습니다.</p>
@@ -673,13 +747,18 @@ function pickVote(el){ document.querySelectorAll("#ballot .note").forEach(p=>p.c
 async function castVote(){
   if(!PICKED) return; if(!confirm("선택한 제안에 투표하시겠습니까? 제출 후 변경할 수 없습니다.")) return;
   const btn=$("#voteBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 제출 중';
-  const r=await apiPost({action:"submitVote",name:STATE.member.name,birth:STATE.member.birth,appId:PICKED});
+  const r=SUPA ? await sbRpc("mpb_cast_vote",{p_name:STATE.member.name,p_birth:STATE.member.birth,p_app_id:PICKED})
+               : await apiPost({action:"submitVote",name:STATE.member.name,birth:STATE.member.birth,appId:PICKED});
   if(r.ok){ $("#view").innerHTML=`<div class="card pad center" style="padding:48px 26px"><div class="badge" style="margin:0 auto"><span class="pip"></span>투표 완료</div><h1 style="margin-top:16px">소중한 한 표 감사합니다</h1><p class="muted">최종 결과는 협회 안내와 이 페이지에서 확인하실 수 있습니다.</p><button class="btn" onclick="STATE.member=null;go('')">처음으로</button></div>`; window.scrollTo(0,0); }
   else{ btn.disabled=false; btn.textContent="투표하기"; $("#vMsg2").innerHTML=`<div class="err">${esc(r.error)}</div>`; window.scrollTo(0,0); }
 }
 async function renderFinalPublic(view){
   view.innerHTML=`<div class="skeleton"><span class="spin"></span> 결과를 불러오는 중…</div>`;
-  const r=await apiGet("results"); const res=(r.results||[]).filter(x=>x.시상);
+  let all=[];
+  if(SUPA){ try{ const rows=await sbGet("mpb_settings?id=eq.1&select=results"); all=(rows&&rows[0]&&rows[0].results)||[]; }catch(e){} }
+  else { const r=await apiGet("results"); all=r.results||[]; }
+  const res=all.filter(x=>x.시상);
+  if(!res.length){ view.innerHTML=`<div class="card pad center"><h2>결과를 준비 중입니다</h2><p class="muted">잠시 후 다시 확인해 주세요.</p><button class="btn ghost" onclick="go('')">처음으로</button></div>`; return; }
   view.innerHTML=`<div class="eyebrow">최종 결과</div><h1>선정된 제안</h1>
     <p class="lead">참여위원회 심사 50%와 회원 투표 50%를 반영한 최종 결과입니다.</p>
     <div class="grid" style="margin:22px 0">${res.map(x=>`<div class="rankcard ${x.순위<=3?'r'+x.순위:'rx'}"><div class="no">${esc(x.시상)}</div>
@@ -727,7 +806,8 @@ async function mockApi(action,b){
     case "saveScore": (D.scores[b.appId]=D.scores[b.appId]||{})[b.judge]=Number(b.score); return {ok:true};
     case "adminData": { if(b.password!=="admin1234") return {ok:false,error:"관리자 비밀번호가 올바르지 않습니다. (데모: admin1234)"};
       const apps=D.items.map(it=>{ const s=Object.values(D.scores[it.신청ID]||{}); const sum=s.reduce((a,c)=>a+c,0); return {신청ID:it.신청ID,제안사업명:it.제안사업명,제안분야:it.제안분야,성명:it.성명,소속기관:it.소속기관,채점수:s.length,총점:sum,평균:s.length?Math.round(sum/s.length*100)/100:0,본선:D.finalists.includes(it.신청ID)}; }).sort((a,b)=>b.평균-a.평균);
-      return {ok:true,config:cfg,judgeCount:3,applications:apps,finalists:D.finalists,voteTotal:D.votes.length,results:demoResults()}; }
+      return {ok:true,config:cfg,judgeCount:3,applications:apps,finalists:D.finalists,voteTotal:D.votes.length,results:demoResults(),supabase:false,memberCount:D.members.length}; }
+    case "syncSupabase": case "importVotes": return {ok:false,error:"미리보기 모드에서는 사용할 수 없습니다."};
     case "exportData": { const H=["신청ID","제안사업명","제안분야","한줄소개","성명","소속기관","배경및필요성","참여대상및예상인원","주요내용및운영방법","기존사업차별점","기대효과","예상추진시기","예상소요예산"];
       return {ok:true,신청내역:[H].concat(D.items.map(it=>H.map(h=>it[h]||""))),심사집계:[["신청ID","제안사업명","평균"]].concat(D.items.map(it=>{const s=Object.values(D.scores[it.신청ID]||{});return [it.신청ID,it.제안사업명,s.length?s.reduce((a,c)=>a+c,0)/s.length:""]})),투표집계:[["신청ID","득표수"]].concat(D.finalists.map(id=>[id,D.votes.filter(v=>v.신청ID===id).length]))}; }
     case "setFinalists": D.finalists=b.ids||[]; return {ok:true};
