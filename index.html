@@ -2,42 +2,42 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>회원 참여프로그램 공모</title>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>회원참여예산제 — 서울특별시사회복지사협회</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
     --brand:#2f7a6f; --brand-deep:#1f5850; --accent:#4fb3a1; --accent-soft:#e7f4f1;
-    --ink:#12302b; --muted:#5f716c; --line:#e2ece9; --bg:#f4f8f6; --card:#ffffff;
-    --warn:#c0553b; --gold:#b98a2e;
+    --ink:#12302b; --muted:#5f716c; --line:#e2ece9; --bg:#f4f8f6; --card:#fff; --warn:#c0553b;
     --r:16px; --shadow:0 1px 2px rgba(18,48,43,.04),0 8px 28px rgba(18,48,43,.06);
-    --font:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;
+    --font:"Pretendard Variable",Pretendard,-apple-system,system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
   }
+  html{scroll-padding-top:env(safe-area-inset-top,0px)}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
-  a{color:inherit}
-  button{font-family:inherit;cursor:pointer;border:none}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
   input,textarea,select{font-family:inherit;font-size:15px;width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);outline:none;transition:.15s}
-  input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-  textarea{resize:vertical;min-height:88px;line-height:1.6}
-  label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 6px}
+  input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  textarea{resize:vertical;min-height:96px;line-height:1.6}
+  label{display:block;font-size:13.5px;font-weight:700;color:#3c4a46;margin:0 0 6px}
   .req::after{content:" *";color:var(--warn)}
+  .opt::after{content:" (선택)";color:var(--muted);font-weight:500;font-size:12px}
 
-  /* layout */
-  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
-  header.top{position:sticky;top:0;z-index:20;background:rgba(244,248,246,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px}
+  header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(244,248,246,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
   .top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em;cursor:pointer}
   .brand .dot{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--brand),var(--accent));box-shadow:inset 0 0 0 3px rgba(255,255,255,.35)}
   .brand small{font-weight:600;color:var(--muted);font-size:12px;display:block;letter-spacing:0}
-  .navlinks{display:flex;gap:4px}
-  .navlinks a{font-size:13px;font-weight:600;color:var(--muted);padding:7px 12px;border-radius:8px;text-decoration:none}
+  .navlinks{display:flex;gap:2px}
+  .navlinks a{font-size:13px;font-weight:600;color:var(--muted);padding:7px 11px;border-radius:8px;text-decoration:none;cursor:pointer}
   .navlinks a:hover{background:#fff;color:var(--brand)}
+  main{padding:34px 0 80px}
 
-  main{padding:38px 0 80px}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px;padding:13px 22px;border-radius:11px;background:var(--brand);color:#fff;transition:.15s;box-shadow:var(--shadow)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px;padding:13px 22px;border-radius:11px;background:var(--brand);color:#fff;transition:.15s;box-shadow:var(--shadow);text-decoration:none}
   .btn:hover{background:var(--brand-deep);transform:translateY(-1px)}
   .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
   .btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--line);box-shadow:none}
@@ -47,589 +47,697 @@
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
   .pad{padding:26px}
+  @media(max-width:600px){.pad{padding:20px 16px}}
   .grid{display:grid;gap:16px}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:600px){.row2{grid-template-columns:1fr}}
-
   .eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
-  h1{font-size:32px;font-weight:800;letter-spacing:-.03em;margin:10px 0 8px;line-height:1.2}
-  h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 14px}
-  .lead{color:var(--muted);font-size:16px;max-width:600px}
-  .hint{font-size:13px;color:var(--muted);margin-top:6px}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.03em;margin:10px 0 8px;line-height:1.25}
+  @media(max-width:600px){h1{font-size:25px}}
+  h2{font-size:19px;font-weight:800;letter-spacing:-.02em;margin:0 0 12px}
+  .lead{color:var(--muted);font-size:15.5px;max-width:640px}
+  .hint{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .muted{color:var(--muted)} .center{text-align:center} .hidden{display:none!important}
 
-  /* stage timeline */
-  .timeline{display:flex;gap:0;margin:26px 0 8px;counter-reset:s}
-  .step{flex:1;position:relative;padding:14px 10px 0;text-align:center}
+  .timeline{display:flex;margin:22px 0 6px;counter-reset:s}
+  .step{flex:1;position:relative;padding:14px 6px 0;text-align:center}
   .step::before{counter-increment:s;content:counter(s);position:relative;z-index:2;display:grid;place-items:center;width:30px;height:30px;margin:0 auto 8px;border-radius:50%;background:#fff;border:2px solid var(--line);color:var(--muted);font-weight:800;font-size:13px}
   .step::after{content:"";position:absolute;top:29px;left:-50%;width:100%;height:2px;background:var(--line);z-index:1}
   .step:first-child::after{display:none}
-  .step .t{font-size:13px;font-weight:700;color:var(--muted)}
+  .step .t{font-size:12.5px;font-weight:700;color:var(--muted)}
   .step.done::before{background:var(--accent);border-color:var(--accent);color:#fff}
   .step.done::after{background:var(--accent)}
   .step.active::before{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 0 0 4px var(--accent-soft)}
   .step.active .t{color:var(--brand)}
-
   .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 11px;border-radius:100px;background:var(--accent-soft);color:var(--brand-deep)}
   .badge .pip{width:7px;height:7px;border-radius:50%;background:var(--accent)}
 
-  .item{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff;transition:.15s}
+  /* 섹션 제목 */
+  .secttl{display:flex;align-items:center;gap:10px;margin:0 0 6px}
+  .secttl .n{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--brand);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .secttl h2{margin:0}
+  .secdesc{font-size:14px;color:var(--muted);margin:0 0 16px;line-height:1.55}
+
+  /* 안내 정보 목록 */
+  .info{display:grid;gap:9px;margin:16px 0 4px}
+  .info div{display:grid;grid-template-columns:90px 1fr;gap:10px;font-size:14px;line-height:1.55}
+  .info dt{font-weight:800;color:var(--brand-deep)}
+  .info dd{margin:0;color:#33453f}
+  .note{background:var(--accent-soft);border:1px solid #cfe8e1;border-radius:12px;padding:13px 16px;font-size:14px;color:var(--brand-deep);line-height:1.55}
+
+  /* 분야 아코디언 */
+  .acc{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;transition:.15s}
+  .acc+.acc{margin-top:10px}
+  .acc.open{border-color:var(--accent)}
+  .acc-head{display:flex;align-items:flex-start;gap:12px;padding:15px 16px}
+  .acc-head .ttl{font-weight:800;font-size:15px}
+  .acc-head .ds{font-size:13.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+  .acc-btn{flex:none;margin-left:auto;font-size:12.5px;font-weight:700;color:var(--brand);background:var(--accent-soft);border-radius:8px;padding:7px 11px;white-space:nowrap}
+  .acc-btn:hover{background:#d9efe9}
+  .acc-body{display:none;padding:0 16px 16px;border-top:1px dashed var(--line)}
+  .acc.open .acc-body{display:block;padding-top:14px}
+  .acc-body .lab{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.04em;margin-bottom:4px}
+  .acc-body ul{margin:4px 0 12px;padding-left:18px;font-size:13.5px;line-height:1.65;color:#33453f}
+  .acc-body .dirn{font-size:13.5px;color:var(--brand-deep);background:var(--accent-soft);border-radius:8px;padding:10px 12px;line-height:1.55}
+  @media(max-width:600px){.acc-head{flex-wrap:wrap}.acc-btn{margin-left:0;width:100%;text-align:center}}
+
+  /* 폼 요소 */
+  .f{margin-bottom:18px}
+  .help{font-size:12.5px;color:var(--muted);margin:-2px 0 7px;line-height:1.5}
+  .cnt{font-size:11.5px;color:var(--muted);text-align:right;margin-top:4px}
+  .pills{display:flex;flex-wrap:wrap;gap:8px}
+  .pill{position:relative}
+  .pill input{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0}
+  .pill span{display:inline-block;padding:9px 15px;border:1px solid var(--line);border-radius:100px;font-size:14px;font-weight:600;color:var(--muted);background:#fff;cursor:pointer;transition:.15s}
+  .pill input:checked+span{background:var(--brand);border-color:var(--brand);color:#fff}
+  .pill:hover span{border-color:var(--accent)}
+  .chkrow{display:flex;gap:11px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+  .chkrow+.chkrow{margin-top:8px}
+  .chkrow input{width:18px;height:18px;margin:2px 0 0;padding:0;accent-color:var(--brand);flex:none}
+  .chkrow b{font-size:14px;display:block;line-height:1.4}
+  .chkrow small{font-size:12.5px;color:var(--muted);line-height:1.5;display:block;margin-top:3px}
+  .bad input,.bad textarea{border-color:var(--warn)!important;box-shadow:0 0 0 3px #fbeeea}
+  .bad .pill span{border-color:var(--warn)}
+  .chkrow.bad{border-color:var(--warn);background:#fff8f6}
+  .filebox{border:1.5px dashed var(--line);border-radius:10px;padding:14px;background:#fafcfb;font-size:13.5px}
+  .filebox input{border:none;padding:0;background:none;font-size:13px}
+  .draft{font-size:12px;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 0}
+  .draft a{color:var(--brand);cursor:pointer;text-decoration:underline}
+  .err{background:#fbeeea;border:1px solid #f0cabd;color:var(--warn);border-radius:10px;padding:12px 14px;font-size:14px;margin:10px 0;line-height:1.5}
+  .ok{background:#eaf6f0;border:1px solid #bfe4d0;color:#1c6b45;border-radius:10px;padding:12px 14px;font-size:14px;margin:10px 0}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  .spacer{flex:1}
+  .spin{display:inline-block;width:18px;height:18px;border:2px solid var(--accent-soft);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .skeleton{color:var(--muted);text-align:center;padding:40px 0}
+  .chipf{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:100px;background:rgba(0,0,0,.08);color:#2a3835}
+
+  /* 입력 확인 모달 */
+  .modal-bg{position:fixed;inset:0;background:rgba(18,48,43,.5);display:grid;place-items:center;z-index:50;padding:16px}
+  .modal{background:#fff;border-radius:16px;max-width:720px;width:100%;max-height:88vh;overflow:auto;padding:24px;box-shadow:0 30px 60px rgba(0,0,0,.3)}
+  .rv{margin:0}
+  .rv dt{font-size:11.5px;font-weight:800;color:var(--accent);margin-top:14px;letter-spacing:.04em}
+  .rv dd{margin:3px 0 0;font-size:14px;line-height:1.6;color:#28322f;white-space:pre-wrap;word-break:break-word}
+
+  /* 심사·관리자 */
+  .item{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
   .item h3{margin:0 0 4px;font-size:16px;font-weight:800;letter-spacing:-.01em}
   .item .meta{font-size:13px;color:var(--muted);margin-bottom:10px}
-  .item p{margin:6px 0;font-size:14px;color:#33453f}
-  .kv{font-size:13px;color:var(--muted)}
-  .kv b{color:var(--ink);font-weight:700}
-
-  /* selectable ballot card */
-  .pick{cursor:pointer}
-  .pick.on{border-color:var(--brand);background:var(--accent-soft);box-shadow:0 0 0 3px var(--accent-soft)}
-  .pick .check{float:right;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;color:transparent;font-weight:900}
-  .pick.on .check{background:var(--brand);border-color:var(--brand);color:#fff}
-
-  /* 포스트잇 카드 덱 (회원 투표) */
-  .deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:26px;align-items:start;margin-top:22px;padding:10px 6px 6px}
-  .note{position:relative;border-radius:3px;padding:30px 22px 20px;cursor:pointer;color:#1f2b28;
-    box-shadow:0 8px 18px rgba(18,48,43,.16),0 2px 4px rgba(18,48,43,.10);
-    transition:transform .18s ease, box-shadow .18s ease}
-  .note:nth-child(5n+1){background:#fdf3c0;transform:rotate(-1.5deg)}
-  .note:nth-child(5n+2){background:#d6f1e2;transform:rotate(1.1deg)}
-  .note:nth-child(5n+3){background:#ffdfe6;transform:rotate(-0.7deg)}
-  .note:nth-child(5n+4){background:#dbeaff;transform:rotate(1.6deg)}
-  .note:nth-child(5n+5){background:#ecdcff;transform:rotate(-1.1deg)}
-  .note:hover{transform:rotate(0) translateY(-5px);box-shadow:0 18px 34px rgba(18,48,43,.22);z-index:2}
-  .note.on{transform:rotate(0) translateY(-3px);box-shadow:0 20px 40px rgba(47,122,111,.30);outline:3px solid var(--brand);z-index:3}
-  .note .pin{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;
-    background:radial-gradient(circle at 34% 30%,#fff 0 12%,#e0574f 46%,#a5322c 100%);box-shadow:0 3px 5px rgba(0,0,0,.32)}
-  .note .check{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:50%;border:2px solid rgba(0,0,0,.18);
-    background:rgba(255,255,255,.55);display:grid;place-items:center;color:transparent;font-weight:900;font-size:14px;transition:.15s}
-  .note.on .check{background:var(--brand);border-color:var(--brand);color:#fff}
-  .note h3{display:inline;margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.55;
-    background:linear-gradient(transparent 62%, rgba(0,0,0,.07) 0)}
-  .note .who{margin:12px 0 14px;font-size:13px;font-weight:700;color:#3c4a46;opacity:.85}
-  .note .nf{margin:9px 0}
-  .note .lbl{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;
-    background:rgba(0,0,0,.09);color:#2a3835;margin-bottom:4px}
-  .note .nt{display:block;font-size:13.5px;line-height:1.55;color:#28322f}
-  .note .budget{display:flex;gap:16px;flex-wrap:wrap;margin-top:15px;padding-top:12px;
-    border-top:1px dashed rgba(0,0,0,.16);font-size:12.5px;font-weight:700;color:#2a3835}
-
+  .item p{margin:7px 0;font-size:14px;color:#33453f;line-height:1.6}
+  .kv{font-size:12.5px;color:var(--muted)} .kv b{color:var(--ink)}
+  .score-in{width:76px;text-align:center;font-weight:700}
   table{width:100%;border-collapse:collapse;font-size:14px}
   th,td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line)}
   th{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
   td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   tr.fin{background:var(--accent-soft)}
-  .chk{width:18px;height:18px;accent-color:var(--brand)}
-
-  .rankcard{display:flex;align-items:center;gap:16px;padding:18px 20px;border:1px solid var(--line);border-radius:14px;background:#fff}
-  .rankcard .no{width:44px;height:44px;flex:none;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff;background:var(--muted)}
+  .chk{width:18px;height:18px;accent-color:var(--brand);padding:0}
+  .rankcard{display:flex;align-items:center;gap:16px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:#fff}
+  .rankcard .no{width:46px;height:46px;flex:none;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:13px;color:#fff;background:var(--muted);text-align:center;line-height:1.1}
   .rankcard.r1 .no{background:linear-gradient(135deg,#d4a53a,#b98a2e)}
   .rankcard.r2 .no{background:linear-gradient(135deg,#9aa7a3,#7d8b86)}
   .rankcard.r3 .no{background:linear-gradient(135deg,#c98f5e,#a9764a)}
-  .rankcard .score{margin-left:auto;text-align:right}
-  .rankcard .score b{font-size:22px;font-weight:800}
+  .rankcard.rx .no{background:linear-gradient(135deg,#5fb09f,#2f7a6f)}
+  .rankcard .score{margin-left:auto;text-align:right} .rankcard .score b{font-size:21px;font-weight:800}
 
-  .note{background:var(--accent-soft);border:1px solid #cfe8e1;border-radius:12px;padding:14px 16px;font-size:14px;color:var(--brand-deep)}
-  .err{background:#fbeeea;border:1px solid #f0cabd;color:var(--warn);border-radius:10px;padding:12px 14px;font-size:14px;margin:10px 0}
-  .ok{background:#eaf6f0;border:1px solid #bfe4d0;color:#1c6b45;border-radius:10px;padding:12px 14px;font-size:14px;margin:10px 0}
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
-  .spacer{flex:1}
-  .center{text-align:center}
-  .muted{color:var(--muted)}
-  .hidden{display:none!important}
-  .skeleton{color:var(--muted);text-align:center;padding:40px 0}
-  .spin{display:inline-block;width:18px;height:18px;border:2px solid var(--accent-soft);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
-  @keyframes sp{to{transform:rotate(360deg)}}
-  .score-in{width:74px;text-align:center;font-weight:700}
-  footer{border-top:1px solid var(--line);padding:24px 0;color:var(--muted);font-size:13px}
-  footer a{color:var(--brand);text-decoration:none}
+  /* 포스트잇 카드 덱 (회원 투표) */
+  .deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:26px;align-items:start;margin-top:22px;padding:10px 6px 6px}
+  .note{position:relative;border-radius:3px;padding:30px 22px 20px;cursor:pointer;color:#1f2b28;box-shadow:0 8px 18px rgba(18,48,43,.16),0 2px 4px rgba(18,48,43,.10);transition:transform .18s ease,box-shadow .18s ease}
+  .note:nth-child(5n+1){background:#fdf3c0;transform:rotate(-1.5deg)}
+  .note:nth-child(5n+2){background:#d6f1e2;transform:rotate(1.1deg)}
+  .note:nth-child(5n+3){background:#ffdfe6;transform:rotate(-.7deg)}
+  .note:nth-child(5n+4){background:#dbeaff;transform:rotate(1.6deg)}
+  .note:nth-child(5n+5){background:#ecdcff;transform:rotate(-1.1deg)}
+  .note:hover{transform:rotate(0) translateY(-5px);box-shadow:0 18px 34px rgba(18,48,43,.22);z-index:2}
+  .note.on{transform:rotate(0) translateY(-3px);box-shadow:0 20px 40px rgba(47,122,111,.3);outline:3px solid var(--brand);z-index:3}
+  .note .pin{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 12%,#e0574f 46%,#a5322c 100%);box-shadow:0 3px 5px rgba(0,0,0,.32)}
+  .note .check{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:50%;border:2px solid rgba(0,0,0,.18);background:rgba(255,255,255,.55);display:grid;place-items:center;color:transparent;font-weight:900;font-size:14px;transition:.15s}
+  .note.on .check{background:var(--brand);border-color:var(--brand);color:#fff}
+  .note h3{display:inline;margin:0;font-size:18.5px;font-weight:800;letter-spacing:-.02em;line-height:1.55;background:linear-gradient(transparent 62%,rgba(0,0,0,.07) 0)}
+  .note .one{margin:12px 0 12px;font-size:14px;line-height:1.6;color:#2a3835;font-weight:600}
+  .note .nf{margin:9px 0}
+  .note .lbl{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;background:rgba(0,0,0,.09);color:#2a3835;margin-bottom:4px}
+  .note .nt{display:block;font-size:13.5px;line-height:1.55;color:#28322f}
+
+  .demo{background:#fff6dc;border-bottom:1px solid #f1dd9a;color:#7a5a00;font-size:12.5px;text-align:center;padding:7px 12px}
+  footer{border-top:1px solid var(--line);padding:24px 0;color:var(--muted);font-size:13px;line-height:1.6}
 </style>
 </head>
 <body>
-<header class="top">
-  <div class="wrap">
-    <div class="brand" onclick="go('')">
-      <span class="dot"></span>
-      <span>참여프로그램 공모<small>서울특별시사회복지사협회</small></span>
-    </div>
-    <nav class="navlinks">
-      <a onclick="go('judge')">심사위원</a>
-      <a onclick="go('admin')">관리자</a>
-    </nav>
-  </div>
-</header>
-
+<div id="demoBar" class="demo hidden">미리보기 모드 · 내장 데모 데이터로 동작 중입니다. <code>CONFIG.GAS_URL</code>을 입력하면 실제 시스템에 연결됩니다. (심사위원 코드 1001 · 관리자 admin1234 · 투표 김서울/850312)</div>
+<header class="top"><div class="wrap">
+  <div class="brand" onclick="go('')"><span class="dot"></span><span>회원참여예산제<small>서울특별시사회복지사협회</small></span></div>
+  <nav class="navlinks"><a onclick="go('judge')">심사위원</a><a onclick="go('admin')">관리자</a></nav>
+</div></header>
 <main><div class="wrap" id="view"><div class="skeleton"><span class="spin"></span> 불러오는 중…</div></div></main>
-
-<footer><div class="wrap">
-  서울특별시사회복지사협회 · 회원 참여프로그램 공모 시스템 &nbsp;|&nbsp;
-  문의는 <a onclick="go('admin')">관리자 페이지</a>에서 확인하세요.
-</div></footer>
+<footer><div class="wrap">서울특별시사회복지사협회 회원조직팀 · 문의 유예리 070-5155-2112 · vgyu1016@sasw.or.kr</div></footer>
 
 <script>
 /* ================= 설정 ================= */
 const CONFIG = {
-  // 배포한 Apps Script 웹앱 URL을 여기에 붙여넣으세요 (…/exec)
-  GAS_URL: "https://script.google.com/macros/s/AKfycbwA_sVU_qRBUM16f-DiQBwM8_WiPhVtMZ054sS7gtU93x0mF3Wht0HAqYhKSWspJAx6/exec",
+  GAS_URL: "https://script.google.com/macros/s/AKfycbwA_sVU_qRBUM16f-DiQBwM8_WiPhVtMZ054sS7gtU93x0mF3Wht0HAqYhKSWspJAx6/exec",   // 배포한 Apps Script 웹앱 URL(…/exec)
+  NOTICE_URL: "",   // 공고문 보기 링크(비우면 버튼 숨김)
+  DOC_URL: "",      // 공문 다운로드 링크(비우면 버튼 숨김)
+  PERIOD: "2026. 10. 7.(수) ~ 11. 6.(금)",
+  CONTACT: "회원조직팀 유예리 070-5155-2112 · vgyu1016@sasw.or.kr",
 };
+const DEMO = CONFIG.GAS_URL.indexOf("붙여넣기") >= 0;
+
+/* ================= 분야 안내 데이터 ================= */
+const FIELDS = [
+  { key:"교육·역량강화", desc:"사회복지사의 전문성과 현장 실무능력을 높이는 교육 및 학습에 관한 제안입니다.",
+    current:[["보수교육","신입사회복지사과정, 선임사회복지사과정, 특화과정 등 대상별 맞춤 교육"],["탐서클(탐나는 서사협 클래스)","AI 활용법, 사회복지 글쓰기, 인사노무 핵심 기본과정 등"],["특별교육","절차탁마, 바이브코딩으로 업무도구 만들기, 사회복지시설 재무회계 교육 등"]],
+    dir:"현장에서 배우고 싶은 교육 주제, 새로운 학습 방식, 경력이나 직무에 맞춘 교육 아이디어를 적어주세요." },
+  { key:"회원서비스·복지", desc:"회원이 일상과 직장생활에서 이용할 수 있는 혜택과 복지서비스에 관한 제안입니다.",
+    current:[["문화연계서비스","뮤지컬, 연극 등"],["건강검진 할인 연계",""],["치과·안과 할인 연계",""],["렌트카 할인","쏘카"]],
+    dir:"회원에게 필요한 혜택, 새롭게 연계했으면 하는 서비스, 서비스 이용 편의 개선 아이디어를 적어주세요." },
+  { key:"참여프로그램", desc:"회원들이 직접 참여하며 휴식, 문화활동, 교류를 경험하는 프로그램에 관한 제안입니다.",
+    current:[["힐링캠프",""],["등반대회",""],["서울시사회복지사의 밤",""]],
+    dir:"회원들이 함께 해보고 싶은 활동, 새로운 교류 방식, 휴식과 문화체험을 위한 프로그램을 적어주세요." },
+  { key:"자유제안", desc:"앞의 세 분야에 해당하지 않는 아이디어도 자유롭게 제안해주세요.", current:null,
+    free:"서울 사회복지사와 협회를 위해 필요하다고 생각하는 사업이나 활동을 자유롭게 적어주세요. 여러 분야가 결합된 아이디어도 이 분야에서 제안할 수 있습니다." },
+];
+const FIELD_KEYS = FIELDS.map(f=>f.key);
+
+/* 신청 항목 정의 */
+const APPLICANT = [
+  ["성명","input",true,"",""],
+  ["생년월일","birth",true,"예: 901111","6자리로 입력해주세요."],
+  ["휴대전화","tel",true,"010-0000-0000",""],
+  ["이메일","email",true,"example@email.com",""],
+  ["소속기관","input",false,"소속이 없는 회원도 접수할 수 있습니다",""],
+];
+const PROPOSAL = [
+  ["제안사업명","input",true,"","제안하시는 사업의 이름을 적어주세요."],
+  ["제안분야","radio",true,"","교육·역량강화 / 회원서비스·복지 / 참여프로그램 / 자유제안 중 가장 가까운 분야 하나를 선택합니다."],
+  ["한줄소개","short",true,"","어떤 사업인지 1~2문장으로 소개해주세요. 최종 후보 선정 시 회원투표 소개자료로 활용될 수 있습니다."],
+  ["배경및필요성","textarea",true,"","어떤 필요나 어려움이 있으며, 협회에서 이 사업을 추진하면 좋은 이유는 무엇인가요?"],
+  ["참여대상및예상인원","textarea",true,"","누구를 위한 사업인가요? 예상 참여인원도 함께 적어주세요."],
+  ["주요내용및운영방법","textarea",true,"","어떤 활동을 어떤 방식으로 진행하나요? 모집방법, 진행 횟수 등 생각하신 내용을 적어주세요."],
+  ["기존사업차별점","textarea",true,"","기존 협회 사업과 비교해 새롭거나 개선되는 점은 무엇인가요?"],
+  ["기대효과","textarea",true,"","회원들에게 어떤 도움이나 변화가 생길 것으로 기대하시나요?"],
+  ["예상추진시기","input",false,"예: 2026년 하반기, 6개월","희망하는 시기나 운영기간이 있다면 적어주세요."],
+  ["예상소요예산","textarea",false,"","예상 총액과 주요 지출항목을 적어주세요. 정확한 금액을 모르면 대략적인 규모 또는 「산정 어려움」으로 작성해도 됩니다."],
+  ["참고자료","file",false,"","설명에 도움이 되는 이미지나 자료가 있으면 첨부해주세요(5MB 이하). 별도 제안서 첨부는 필수가 아닙니다."],
+];
+const CONSENTS = [
+  ["개인정보동의","개인정보 수집·이용 동의","접수, 회원 확인, 심사, 결과 안내를 위해 성명·생년월일·휴대전화번호·이메일·소속기관을 수집·이용하며, 공모 결과 안내 완료 후 지체 없이 파기합니다. 세부 내용은 협회 개인정보 처리방침에 따릅니다."],
+  ["제안공개확인","제안 공개 확인","최종 후보로 선정되면 사업명, 한 줄 소개, 주요 내용 등이 회원투표 소개자료로 공개될 수 있음을 확인합니다. 휴대전화번호와 이메일 등 연락처는 공개되지 않습니다."],
+  ["제출내용확인","제출내용 확인","본인이 직접 작성한 제안이며, 타인의 자료를 활용한 경우 출처를 표시했음을 확인합니다."],
+  ["선정후활용확인","선정 후 활용 안내 확인","선정된 제안의 실제 추진 여부, 시기, 내용은 협회 검토와 예산 편성에 따라 결정·조정될 수 있음을 확인합니다."],
+];
+const LABEL = {
+  성명:"성명", 생년월일:"생년월일", 휴대전화:"휴대전화번호", 이메일:"이메일", 소속기관:"소속기관", 회비납부확인:"2026년 서울협회 회비납부 여부 확인",
+  제안사업명:"제안 사업명", 제안분야:"제안분야", 한줄소개:"제안 한 줄 소개", 배경및필요성:"제안 배경 및 필요성", 참여대상및예상인원:"참여대상 및 예상 인원",
+  주요내용및운영방법:"주요 내용 및 운영방법", 기존사업차별점:"기존 사업과의 차별점", 기대효과:"기대효과", 예상추진시기:"예상 추진시기 및 기간",
+  예상소요예산:"예상 소요예산", 참고자료:"참고자료 첨부",
+};
+const NUM = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪"];
 
 /* ================= 통신 ================= */
-async function apiGet(action){
-  const r = await fetch(CONFIG.GAS_URL + "?action=" + encodeURIComponent(action));
-  return r.json();
-}
-async function apiPost(payload){
-  const r = await fetch(CONFIG.GAS_URL, {
-    method:"POST",
-    headers:{"Content-Type":"text/plain;charset=utf-8"}, // CORS preflight 회피
-    body: JSON.stringify(payload),
-  });
-  return r.json();
-}
-const $ = (s,el=document)=>el.querySelector(s);
-const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const nl = s => esc(s).replace(/\n/g,"<br>");
-const fmtWon = v => { const n=String(v==null?"":v).replace(/[^\d]/g,""); return n ? Number(n).toLocaleString("ko-KR")+"원" : ""; };
-
-let STATE = { config:null, judge:null, admin:null, member:null };
+async function apiGet(action){ if(DEMO) return mockApi(action,{}); const r=await fetch(CONFIG.GAS_URL+"?action="+encodeURIComponent(action)); return r.json(); }
+async function apiPost(payload){ if(DEMO) return mockApi(payload.action,payload); const r=await fetch(CONFIG.GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)}); return r.json(); }
+const $=(s,el=document)=>el.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nl=s=>esc(s).replace(/\n/g,"<br>");
+let STATE={config:null,judge:null,admin:null,member:null};
 
 /* ================= 라우팅 ================= */
-function go(route){ location.hash = route ? "#"+route : "#"; }
-window.addEventListener("hashchange", render);
-window.addEventListener("DOMContentLoaded", render);
-
+function go(route){ location.hash=route?"#"+route:"#"; window.scrollTo(0,0); }
+window.addEventListener("hashchange",render);
+window.addEventListener("DOMContentLoaded",()=>{ if(DEMO) $("#demoBar").classList.remove("hidden"); render(); });
 async function render(){
-  const route = location.hash.replace("#","");
-  const view = $("#view");
-  if (CONFIG.GAS_URL.indexOf("붙여넣기") >= 0){
-    view.innerHTML = `<div class="card pad"><div class="err">먼저 <b>index.html</b> 상단 <code>CONFIG.GAS_URL</code>에 Apps Script 웹앱 주소를 입력하세요.</div></div>`;
-    return;
-  }
-  try{
-    if (!STATE.config) STATE.config = (await apiGet("config")).config;
-  }catch(e){ view.innerHTML = `<div class="card pad"><div class="err">서버 연결에 실패했습니다. GAS_URL과 배포 상태를 확인해 주세요.</div></div>`; return; }
-
-  if (route === "apply") return viewApply(view);
-  if (route === "vote")  return viewVote(view);
-  if (route === "judge") return viewJudge(view);
-  if (route === "admin") return viewAdmin(view);
+  const route=location.hash.replace("#",""), view=$("#view");
+  try{ if(!STATE.config) STATE.config=(await apiGet("config")).config; }
+  catch(e){ view.innerHTML=`<div class="card pad"><div class="err">서버 연결에 실패했습니다. GAS_URL과 배포 상태를 확인해 주세요.</div></div>`; return; }
+  if(route==="apply") return viewApply(view);
+  if(route==="vote") return viewVote(view);
+  if(route==="judge") return viewJudge(view);
+  if(route==="admin") return viewAdmin(view);
   return viewHome(view);
 }
-
 function stageTimeline(cur){
-  const steps=["신청","심사","투표","종료"];
-  const labels={"신청":"프로그램 신청","심사":"심사위원 심사","투표":"회원 투표","종료":"결과 발표"};
+  const steps=["신청","심사","투표","종료"], labels={"신청":"제안 접수","심사":"위원회 심사","투표":"회원 투표","종료":"결과 발표"};
   const idx=steps.indexOf(cur);
-  return `<div class="timeline">${steps.map((s,i)=>`
-    <div class="step ${i<idx?"done":""} ${i===idx?"active":""}"><div class="t">${labels[s]}</div></div>`).join("")}</div>`;
+  return `<div class="timeline">${steps.map((s,i)=>`<div class="step ${i<idx?"done":""} ${i===idx?"active":""}"><div class="t">${labels[s]}</div></div>`).join("")}</div>`;
 }
+function secttl(n,t){ return `<div class="secttl"><span class="n">${n}</span><h2>${t}</h2></div>`; }
 
 /* ================= 홈 ================= */
 function viewHome(view){
-  const c = STATE.config;
-  const stage = c.단계;
-  let cta = "";
-  if (stage==="신청") cta = `<button class="btn" onclick="go('apply')">프로그램 신청하기 →</button>`;
-  else if (stage==="투표") cta = `<button class="btn" onclick="go('vote')">회원 투표 참여하기 →</button>`;
-  else if (stage==="종료") cta = `<button class="btn" onclick="go('vote')">최종 결과 보기 →</button>`;
-  else cta = `<span class="badge"><span class="pip"></span>현재 심사위원 심사가 진행 중입니다</span>`;
-
-  view.innerHTML = `
-    <div class="eyebrow">회원 참여프로그램 공모</div>
+  const c=STATE.config, stage=c.단계, N=c.본선개수;
+  const cta = stage==="신청" ? `<button class="btn" onclick="go('apply')">제안 접수하기 →</button>`
+            : stage==="투표" ? `<button class="btn" onclick="go('vote')">회원 투표 참여하기 →</button>`
+            : stage==="종료" ? `<button class="btn" onclick="go('vote')">최종 결과 보기 →</button>`
+            : `<span class="badge"><span class="pip"></span>참여위원회 심사가 진행 중입니다</span>`;
+  view.innerHTML=`
+    <div class="eyebrow">서울특별시사회복지사협회</div>
     <h1>${esc(c.행사명)}</h1>
-    <p class="lead">회원이 제안하고, 회원이 함께 뽑습니다. 심사위원 심사와 회원 온라인 투표를 절반씩 반영해 최종 프로그램을 선정합니다.</p>
+    <p class="lead">회원님의 아이디어로 협회의 새로운 사업을 만들어갑니다. 서울사회복지사를 위해 협회에서 추진했으면 하는 교육, 회원서비스, 참여프로그램 등을 제안해주세요.</p>
     ${stageTimeline(stage)}
-    <div class="card pad" style="margin-top:22px">
-      <div class="toolbar" style="margin:0">
-        <span class="badge"><span class="pip"></span>현재 단계 · ${esc({"신청":"프로그램 신청 접수","심사":"심사위원 심사","투표":"회원 온라인 투표","종료":"결과 발표"}[stage])}</span>
-        <span class="spacer"></span>
-      </div>
+    <div class="card pad" style="margin-top:20px">
+      <span class="badge"><span class="pip"></span>현재 단계 · ${esc({"신청":"제안 접수 중","심사":"참여위원회 심사","투표":"회원 온라인 투표","종료":"결과 발표"}[stage])}</span>
       <div style="margin-top:16px">${cta}</div>
     </div>
-
-    <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:16px">
-      <div class="card pad">
-        <h2>선정 방식</h2>
-        <p class="kv">1차 심사위원 심사로 <b>상위 10개</b>를 가립니다.</p>
-        <p class="kv">본선 10개는 회원 온라인 투표에 부쳐집니다.</p>
-        <p class="kv"><b>심사 50% + 투표 50%</b>로 최종 <b>상위 3개</b>를 선정합니다.</p>
-      </div>
-      <div class="card pad">
-        <h2>투표 자격</h2>
-        <p class="kv">올해 <b>회비를 납부한 회원</b>이 투표할 수 있습니다.</p>
-        <p class="kv">성함과 생년월일 6자리로 확인합니다.</p>
-        <p class="kv">투표는 <b>1인 1회</b>만 참여할 수 있습니다.</p>
-      </div>
+    <div class="row2" style="margin-top:16px">
+      <div class="card pad"><h2>선정 방법</h2>
+        <p class="kv">참여위원회 심사로 <b>상위 ${N}건</b>을 선정합니다.</p>
+        <p class="kv">선정된 제안은 <b>회원투표</b>에 부쳐집니다.</p>
+        <p class="kv">위원회 점수와 회원투표 결과를 <b>각각 50%</b> 반영해 최종 선정합니다.</p></div>
+      <div class="card pad"><h2>시상</h2>
+        <p class="kv"><b>1~3위</b> · <b>장려상 2건</b> · 참여상</p>
+        <p class="kv">투표 자격: 2026년 서울시사회복지사협회 회비납부 회원 (1인 1회)</p></div>
+      <div class="card pad"><h2>접수 기간</h2><p class="kv"><b>${esc(CONFIG.PERIOD)}</b></p></div>
+      <div class="card pad"><h2>문의</h2><p class="kv">${esc(CONFIG.CONTACT)}</p></div>
     </div>`;
 }
 
-/* ================= 신청 폼 ================= */
+/* ================= ① ~ ⑥ 접수 페이지 ================= */
+const DRAFT_KEY="mpb_draft_v1";
+let PENDING_FILE=null;
+
 function viewApply(view){
-  if (STATE.config.단계 !== "신청"){
-    view.innerHTML = `<div class="card pad center"><h2>신청이 마감되었습니다</h2><p class="muted">현재는 신청 접수 기간이 아닙니다.</p><button class="btn ghost" onclick="go('')">처음으로</button></div>`;
+  if(STATE.config.단계!=="신청"){
+    view.innerHTML=`<div class="card pad center"><h2>지금은 접수 기간이 아닙니다</h2><p class="muted">접수 기간: ${esc(CONFIG.PERIOD)}</p><button class="btn ghost" onclick="go('')">처음으로</button></div>`; return;
+  }
+  const c=STATE.config, N=c.본선개수;
+  const fieldHtml=(k,type,req,ph,help)=>{
+    const lab=`<label class="${req?'req':'opt'}" for="f_${k}">${LABEL[k]||k}</label>`;
+    const hp=help?`<div class="help">${help}</div>`:"";
+    if(type==="textarea"||type==="short") return `<div class="f" data-k="${k}">${lab}${hp}<textarea id="f_${k}" placeholder="${ph}" style="${type==='short'?'min-height:66px':''}"></textarea><div class="cnt" id="cnt_${k}">0자</div></div>`;
+    if(type==="radio") return `<div class="f" data-k="${k}">${lab}${hp}<div class="pills">${FIELD_KEYS.map(v=>`<label class="pill"><input type="radio" name="제안분야" value="${esc(v)}"><span>${esc(v)}</span></label>`).join("")}</div></div>`;
+    if(type==="file") return `<div class="f" data-k="${k}">${lab}${hp}<div class="filebox"><input type="file" id="f_${k}" accept="image/*,.pdf,.doc,.docx,.hwp,.hwpx,.ppt,.pptx,.xls,.xlsx,.zip"><div class="hint" id="fileMsg">선택된 파일 없음</div></div></div>`;
+    const attrs = type==="birth"?'maxlength="6" inputmode="numeric"' : type==="tel"?'inputmode="tel" type="tel"' : type==="email"?'type="email" inputmode="email"':'';
+    return `<div class="f" data-k="${k}">${lab}${hp}<input id="f_${k}" placeholder="${ph}" ${attrs}></div>`;
+  };
+  view.innerHTML=`
+    <div class="eyebrow">제안 접수</div>
+    <h1>${esc(c.행사명)} 접수</h1>
+    <p class="lead">회원님의 아이디어로 협회의 새로운 사업을 만들어갑니다. 서울사회복지사를 위해 협회에서 추진했으면 하는 교육, 회원서비스, 참여프로그램 등을 제안해주세요.</p>
+
+    <!-- ① 사업 안내 -->
+    <div class="card pad" style="margin-top:20px">
+      ${secttl(1,"회원참여예산제 사업 안내")}
+      <dl class="info">
+        <div><dt>참여대상</dt><dd>2026년 서울시사회복지사협회 회비납부 회원</dd></div>
+        <div><dt>제안분야</dt><dd>교육·역량강화 / 회원서비스·복지 / 참여프로그램 / 자유제안</dd></div>
+        <div><dt>선정방법</dt><dd>참여위원회 심사로 상위 ${N}건 선정 → 회원투표 → 위원회 점수와 회원투표 결과를 각각 50% 반영해 최종 선정</dd></div>
+        <div><dt>시상</dt><dd>1~3위, 장려상 2건, 참여상</dd></div>
+        <div><dt>접수기간</dt><dd>${esc(CONFIG.PERIOD)}</dd></div>
+        <div><dt>문의</dt><dd>${esc(CONFIG.CONTACT)}</dd></div>
+      </dl>
+      ${(CONFIG.NOTICE_URL||CONFIG.DOC_URL)?`<div class="toolbar" style="margin:12px 0 14px">${CONFIG.NOTICE_URL?`<a class="btn ghost sm" href="${esc(CONFIG.NOTICE_URL)}" target="_blank">공고문 보기</a>`:""}${CONFIG.DOC_URL?`<a class="btn ghost sm" href="${esc(CONFIG.DOC_URL)}" target="_blank">공문 다운로드</a>`:""}</div>`:""}
+      <div class="note"><b>작성 안내</b> · 전문적인 사업계획서가 아니어도 괜찮습니다. 왜 필요한 사업인지, 누구를 대상으로 어떻게 진행하면 좋을지 구체적으로 적어주세요.</div>
+    </div>
+
+    <!-- ② 제안분야 안내 -->
+    <div class="card pad" style="margin-top:16px">
+      ${secttl(2,"어떤 분야의 아이디어인가요?")}
+      <p class="secdesc">분야별 설명과 협회의 기존 사업을 참고하여 제안과 가장 가까운 분야를 선택해주세요. 아래 사업은 분야 이해를 돕기 위한 예시입니다.</p>
+      <div id="accs">${FIELDS.map((f,i)=>`
+        <div class="acc" id="acc_${i}">
+          <div class="acc-head">
+            <div><div class="ttl">${["가","나","다","라"][i]}. ${esc(f.key)}</div><div class="ds">${esc(f.desc)}</div></div>
+            <button class="acc-btn" type="button" onclick="toggleAcc(${i})" id="accbtn_${i}">${f.current?"현재 협회 사업 보기 ▾":"자세히 보기 ▾"}</button>
+          </div>
+          <div class="acc-body">
+            ${f.current?`<div class="lab">현재 협회 사업</div><ul>${f.current.map(([n,d])=>`<li><b>${esc(n)}</b>${d?`: ${esc(d)}`:""}</li>`).join("")}</ul>`:`<p style="margin:0 0 10px;font-size:13.5px;line-height:1.6;color:#33453f">${esc(f.free)}</p>`}
+            ${f.dir?`<div class="dirn"><b>제안 방향</b> · ${esc(f.dir)}</div>`:""}
+          </div>
+        </div>`).join("")}</div>
+      <div class="hint" style="margin-top:12px">여러 분야에 해당하는 경우 가장 가까운 분야 하나를 선택해주세요. 분류가 어려우면 자유제안을 선택할 수 있습니다. 분야는 내용 이해를 위한 구분이며, 전체 제안을 통합하여 심사합니다.</div>
+    </div>
+
+    <form id="applyForm" onsubmit="return false">
+    <!-- ③ 신청자 정보 -->
+    <div class="card pad" style="margin-top:16px">
+      ${secttl(3,"신청자 정보")}
+      <div class="row2">${APPLICANT.map(a=>fieldHtml(...a)).join("")}</div>
+      <label class="chkrow" id="row_회비납부확인"><input type="checkbox" id="c_회비납부확인"><div><b class="req">2026년 서울협회 회비납부 회원입니다</b><small>실제 회비납부 여부는 협회에서 확인하며, 신청자의 체크만으로 참가자격이 확정되지 않습니다.</small></div></label>
+    </div>
+
+    <!-- ④ 제안 내용 -->
+    <div class="card pad" style="margin-top:16px">
+      ${secttl(4,"제안 내용 작성")}
+      <p class="secdesc">서술형 항목은 여러 줄로 자유롭게 작성할 수 있습니다. 작성 중인 내용은 이 기기에 자동으로 임시저장됩니다.</p>
+      ${PROPOSAL.map((p,i)=>fieldHtml(p[0],p[1],p[2],p[3],p[4]).replace(`>${LABEL[p[0]]}<`,`>${NUM[i]} ${LABEL[p[0]]}<`)).join("")}
+      <div class="hint">예산 안내 · 공모·시상 예산과 제안 사업의 실행예산은 구분됩니다. 사업 실행예산 한도는 별도로 확정된 경우 공고문에서 안내합니다.</div>
+    </div>
+
+    <!-- ⑤ 확인 및 동의 -->
+    <div class="card pad" style="margin-top:16px">
+      ${secttl(5,"확인 및 동의")}
+      ${CONSENTS.map(([k,t,d])=>`<label class="chkrow" id="row_${k}"><input type="checkbox" id="c_${k}"><div><b class="req">${t}</b><small>${d}</small></div></label>`).join("")}
+    </div>
+
+    <!-- ⑥ 제출 -->
+    <div class="card pad" style="margin-top:16px">
+      ${secttl(6,"제출")}
+      <div id="applyMsg"></div>
+      <p class="hint" style="margin:0 0 12px">「입력내용 확인」을 누르면 필수항목 누락을 알려드리고, 작성한 내용을 한 번 더 확인한 뒤 제출할 수 있습니다.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" type="button" onclick="openReview()">입력내용 확인</button>
+        <button class="btn ghost" type="button" onclick="go('')">취소</button>
+      </div>
+      <div class="draft" id="draftBar"></div>
+    </div>
+    </form>`;
+  bindApply();
+  restoreDraft();
+}
+
+function toggleAcc(i){ const el=$("#acc_"+i); el.classList.toggle("open"); const open=el.classList.contains("open"); const b=$("#accbtn_"+i); b.textContent=(FIELDS[i].current?"현재 협회 사업 보기":"자세히 보기")+(open?" ▴":" ▾"); }
+
+function bindApply(){
+  const form=$("#applyForm");
+  form.addEventListener("input",e=>{
+    const t=e.target;
+    if(t.tagName==="TEXTAREA"){ const k=t.id.replace("f_",""); const c=$("#cnt_"+k); if(c) c.textContent=t.value.length+"자"; }
+    const w=t.closest(".f, .chkrow"); if(w) w.classList.remove("bad");
+    saveDraftDebounced();
+  });
+  form.addEventListener("change",e=>{
+    const t=e.target;
+    if(t.type==="file"){ const f=t.files[0]; const m=$("#fileMsg");
+      if(!f){ PENDING_FILE=null; m.textContent="선택된 파일 없음"; return; }
+      if(f.size>5*1024*1024){ PENDING_FILE=null; t.value=""; m.innerHTML=`<span style="color:var(--warn)">5MB 이하 파일만 첨부할 수 있습니다.</span>`; return; }
+      PENDING_FILE=f; m.textContent=`${f.name} (${(f.size/1024).toFixed(0)}KB)`; return; }
+    const w=t.closest(".f, .chkrow"); if(w) w.classList.remove("bad");
+    saveDraftDebounced();
+  });
+}
+
+/* 임시저장 */
+let draftTimer=null;
+function saveDraftDebounced(){ clearTimeout(draftTimer); draftTimer=setTimeout(saveDraft,500); }
+function collectApply(){
+  const d={};
+  APPLICANT.forEach(([k])=>d[k]=($("#f_"+k)||{}).value||"");
+  PROPOSAL.forEach(([k,type])=>{ if(type==="radio"){ const r=document.querySelector('input[name="제안분야"]:checked'); d[k]=r?r.value:""; } else if(type!=="file"){ d[k]=($("#f_"+k)||{}).value||""; } });
+  d.회비납부확인=$("#c_회비납부확인")?.checked?"Y":"";
+  CONSENTS.forEach(([k])=>d[k]=$("#c_"+k)?.checked?"Y":"");
+  return d;
+}
+function saveDraft(){
+  try{ const d=collectApply(); d._ts=Date.now(); localStorage.setItem(DRAFT_KEY,JSON.stringify(d)); showDraftBar(d._ts); }catch(e){}
+}
+function restoreDraft(){
+  try{
+    const raw=localStorage.getItem(DRAFT_KEY); if(!raw) { showDraftBar(null); return; }
+    const d=JSON.parse(raw);
+    Object.keys(d).forEach(k=>{
+      if(k==="_ts") return;
+      if(k==="제안분야"){ const r=document.querySelector(`input[name="제안분야"][value="${CSS.escape(d[k])}"]`); if(r) r.checked=true; return; }
+      const cb=$("#c_"+k); if(cb){ cb.checked=d[k]==="Y"; return; }
+      const el=$("#f_"+k); if(el&&el.type!=="file"){ el.value=d[k]; const c=$("#cnt_"+k); if(c) c.textContent=(d[k]||"").length+"자"; }
+    });
+    showDraftBar(d._ts);
+  }catch(e){}
+}
+function showDraftBar(ts){
+  const b=$("#draftBar"); if(!b) return;
+  b.innerHTML = ts ? `임시저장됨 · ${new Date(ts).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})} <a onclick="clearDraft()">임시저장 삭제</a>` : `작성 중인 내용은 이 기기에 자동 임시저장됩니다.`;
+}
+function clearDraft(){ if(!confirm("임시저장된 내용을 삭제하고 입력칸을 비울까요?")) return; localStorage.removeItem(DRAFT_KEY); viewApply($("#view")); }
+
+/* 검증 → 입력내용 확인 모달 */
+function validateApply(d){
+  const miss=[];
+  const mark=k=>{ const w=document.querySelector(`.f[data-k="${k}"]`)||$("#row_"+k); if(w) w.classList.add("bad"); miss.push(LABEL[k]||k); };
+  APPLICANT.forEach(([k,,req])=>{ if(req&&!d[k].trim()) mark(k); });
+  if(d.생년월일.trim() && d.생년월일.replace(/\D/g,"").length!==6){ const w=document.querySelector('.f[data-k="생년월일"]'); if(w) w.classList.add("bad"); miss.push("생년월일(6자리)"); }
+  if(d.회비납부확인!=="Y") mark("회비납부확인");
+  PROPOSAL.forEach(([k,type,req])=>{ if(req && type!=="file" && !String(d[k]).trim()) mark(k); });
+  CONSENTS.forEach(([k,t])=>{ if(d[k]!=="Y"){ const w=$("#row_"+k); if(w) w.classList.add("bad"); miss.push(t); } });
+  return miss;
+}
+function openReview(){
+  const d=collectApply();
+  document.querySelectorAll(".bad").forEach(e=>e.classList.remove("bad"));
+  const miss=validateApply(d);
+  const m=$("#applyMsg");
+  if(miss.length){
+    m.innerHTML=`<div class="err"><b>다음 필수항목을 확인해 주세요.</b><br>${miss.map(esc).join(" · ")}</div>`;
+    const first=document.querySelector(".bad"); if(first) first.scrollIntoView({behavior:"smooth",block:"center"});
     return;
   }
-  const org=[
-    ["성함","input",true,"신청자 성함"],
-    ["소속","input",false,"소속 기관/단체"],
-    ["직책","input",false,"직책"],
-    ["핸드폰번호","input",true,"010-0000-0000"],
-    ["이메일","input",true,"example@email.com"],
-    ["생년월일","input",true,"예: 901111"],
-  ];
-  const plan=[
-    ["사업명","input",true,""],
-    ["사업의필요성","textarea",true,"대상의 문제·욕구와 사업의 필요성"],
-    ["서비스지역","input",false,"사업 수행 지역"],
-    ["서비스대상및실인원","textarea",true,"주요 대상과 예상 실인원"],
-    ["사업목적및목표","textarea",false,"사업의 목적과 측정 가능한 목표"],
-    ["사업내용","textarea",true,"세부사업·활동·추진일정 등 구체적으로"],
-    ["기대효과","textarea",false,"사업을 통해 기대되는 변화·성과"],
-    ["총사업비","input",false,"예: 5,000,000"],
-    ["신청금액","input",false,"공모 신청 금액"],
-    ["예산계획","textarea",false,"항목별 산출근거"],
-  ];
-  const secTag = (n,t)=>`<span style="display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;font-weight:800;font-size:14px;margin-right:8px;vertical-align:-5px">${n}</span><h2 style="display:inline">${t}</h2>`;
-  const field = a=>{const [k,type,req,ph]=a; return `
-    <div>
-      <label class="${req?'req':''}" for="f_${k}">${labelOf(k)}</label>
-      ${type==="textarea" ? `<textarea id="f_${k}" placeholder="${ph}"></textarea>` : `<input id="f_${k}" placeholder="${ph}" ${k==='생년월일'?'maxlength="6" inputmode="numeric"':''} />`}
-    </div>`;};
-  view.innerHTML = `
-    <div class="eyebrow">STEP 1 · 신청</div>
-    <h1>배분사업 신청서</h1>
-    <p class="lead">서울 사회복지공동모금회 배분사업 신청서 양식에 따라 작성합니다. <b>*</b> 표시는 필수 항목입니다.</p>
-    <div class="card pad" style="margin-top:20px">
-      <div id="applyMsg"></div>
-      ${secTag(1,"신청자 정보")}
-      <div class="grid" style="margin-top:14px">${org.map(field).join("")}</div>
-      <hr style="border:none;border-top:1px solid var(--line);margin:26px 0">
-      ${secTag(2,"사업 계획")}
-      <div class="grid" style="margin-top:14px">${plan.map(field).join("")}</div>
-      <div style="margin-top:22px;display:flex;gap:10px">
-        <button class="btn" id="applyBtn" onclick="submitApply()">신청서 제출</button>
-        <button class="btn ghost" onclick="go('')">취소</button>
-      </div>
-    </div>`;
+  m.innerHTML="";
+  const rows=[["신청자",`${d.성명} · ${d.생년월일} · ${d.휴대전화} · ${d.이메일}${d.소속기관?` · ${d.소속기관}`:""}`]]
+    .concat(PROPOSAL.filter(p=>p[1]!=="file").map(([k])=>[LABEL[k],d[k]]))
+    .concat([["참고자료",PENDING_FILE?PENDING_FILE.name:"(첨부 없음)"],["확인·동의","회비납부 확인 / 개인정보 / 제안 공개 / 제출내용 / 선정 후 활용 — 모두 확인"]]);
+  const bg=document.createElement("div"); bg.className="modal-bg"; bg.id="reviewModal";
+  bg.innerHTML=`<div class="modal">
+    <div class="eyebrow">제출 전 확인</div><h2 style="margin:6px 0 2px">입력내용을 확인해 주세요</h2>
+    <p class="hint" style="margin:0 0 6px">수정이 필요하면 「수정하기」를 눌러 돌아갈 수 있습니다.</p>
+    <dl class="rv">${rows.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v?nl(v):"-"}</dd>`).join("")}</dl>
+    <div id="submitMsg"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap"><button class="btn" id="submitBtn" onclick="submitApply()">제출하기</button><button class="btn ghost" onclick="closeReview()">수정하기</button></div>
+  </div>`;
+  document.body.appendChild(bg);
 }
-function labelOf(k){return {
-  성함:"성함", 소속:"소속", 직책:"직책",
-  핸드폰번호:"핸드폰 번호", 이메일:"이메일 주소", 생년월일:"생년월일 앞자리(예: 901111)",
-  사업의필요성:"사업의 필요성", 서비스지역:"서비스 지역", 서비스대상및실인원:"서비스 대상 및 실인원",
-  사업목적및목표:"사업 목적 및 목표", 사업내용:"사업 내용",
-  총사업비:"총사업비(원)", 신청금액:"신청금액(원)", 예산계획:"예산계획(산출근거)",
-}[k]||k;}
+function closeReview(){ const m=$("#reviewModal"); if(m) m.remove(); }
 
+function readFileB64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); }); }
 async function submitApply(){
-  const keys=["성함","소속","직책","핸드폰번호","이메일","생년월일","사업명","사업의필요성","서비스지역","서비스대상및실인원","사업목적및목표","사업내용","기대효과","총사업비","신청금액","예산계획"];
-  const p={action:"submitApplication"};
-  keys.forEach(k=>p[k]=$("#f_"+k).value.trim());
-  const btn=$("#applyBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 제출 중';
-  const r=await apiPost(p);
-  btn.disabled=false; btn.textContent="신청서 제출";
-  const m=$("#applyMsg");
+  const d=collectApply(); const btn=$("#submitBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 제출 중';
+  const payload={action:"submitApplication",...d};
+  if(PENDING_FILE){ try{ payload.file={name:PENDING_FILE.name,mime:PENDING_FILE.type,data:await readFileB64(PENDING_FILE)}; }catch(e){} }
+  const r=await apiPost(payload);
   if(r.ok){
-    $("#view").innerHTML=`<div class="card pad center" style="padding:48px 26px">
+    localStorage.removeItem(DRAFT_KEY); PENDING_FILE=null; closeReview();
+    $("#view").innerHTML=`<div class="card pad center" style="padding:52px 26px">
       <div class="badge" style="margin:0 auto"><span class="pip"></span>접수 완료</div>
-      <h1 style="margin-top:16px">신청이 접수되었습니다</h1>
-      <p class="muted">접수번호 <b>${esc(r.id)}</b> · 심사 결과는 협회 안내를 확인해 주세요.</p>
+      <h1 style="margin-top:16px">접수가 완료되었습니다</h1>
+      <dl class="info" style="max-width:420px;margin:18px auto 24px;text-align:left">
+        <div><dt>접수번호</dt><dd><b>${esc(r.id)}</b></dd></div>
+        <div><dt>사업명</dt><dd>${esc(r.제안사업명||d.제안사업명)}</dd></div>
+        <div><dt>접수일시</dt><dd>${esc(r.접수일시||new Date().toLocaleString("ko-KR"))}</dd></div>
+      </dl>
+      <p class="muted" style="font-size:14px">접수번호를 기억해 두세요. 심사 결과는 협회 안내를 확인해 주세요.</p>
       <button class="btn" onclick="go('')">처음으로</button>
-    </div>`;
-  }else{ m.innerHTML=`<div class="err">${esc(r.error||"제출에 실패했습니다.")}</div>`; window.scrollTo(0,0); }
+    </div>`; window.scrollTo(0,0);
+  }else{ btn.disabled=false; btn.textContent="제출하기"; $("#submitMsg").innerHTML=`<div class="err">${esc(r.error||"제출에 실패했습니다.")}</div>`; }
 }
 
 /* ================= 심사위원 ================= */
 function viewJudge(view){
-  if (STATE.judge) return renderJudgeList(view);
-  view.innerHTML = `
-    <div class="eyebrow">STEP 2 · 심사</div>
-    <h1>심사위원 로그인</h1>
-    <p class="lead">배정받은 심사위원 코드를 입력하세요. 각 프로그램에 0~100점을 부여합니다.</p>
-    <div class="card pad" style="margin-top:20px;max-width:420px">
-      <div id="jMsg"></div>
-      <label class="req">심사위원 코드</label>
-      <input id="jcode" placeholder="예: 1001" onkeydown="if(event.key==='Enter')judgeLogin()" />
-      <button class="btn block" style="margin-top:16px" id="jbtn" onclick="judgeLogin()">로그인</button>
-    </div>`;
+  if(STATE.judge) return renderJudgeList(view);
+  view.innerHTML=`<div class="eyebrow">참여위원회 심사</div><h1>심사위원 로그인</h1>
+    <p class="lead">배정받은 심사위원 코드를 입력하세요. 각 제안에 0~100점을 부여합니다.</p>
+    <div class="card pad" style="margin-top:20px;max-width:420px"><div id="jMsg"></div>
+      <label class="req">심사위원 코드</label><input id="jcode" placeholder="예: 1001" onkeydown="if(event.key==='Enter')judgeLogin()">
+      <button class="btn block" style="margin-top:16px" id="jbtn" onclick="judgeLogin()">로그인</button></div>`;
 }
 async function judgeLogin(){
-  const code=$("#jcode").value.trim();
-  const btn=$("#jbtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 확인 중';
-  const r=await apiPost({action:"judgeLogin",code});
-  btn.disabled=false; btn.textContent="로그인";
-  if(r.ok){ STATE.judge=r; renderJudgeList($("#view")); }
-  else $("#jMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`;
+  const code=$("#jcode").value.trim(); const btn=$("#jbtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 확인 중';
+  const r=await apiPost({action:"judgeLogin",code}); btn.disabled=false; btn.textContent="로그인";
+  if(r.ok){ STATE.judge=r; renderJudgeList($("#view")); } else $("#jMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`;
 }
 function renderJudgeList(view){
-  const j=STATE.judge;
-  const scored=j.items.filter(i=>i.내점수!=="").length;
-  view.innerHTML=`
-    <div class="toolbar">
-      <div><div class="eyebrow">심사</div><h1 style="margin:6px 0 0">${esc(j.심사위원명)} 심사위원</h1></div>
-      <span class="spacer"></span>
-      <span class="badge"><span class="pip"></span>${scored} / ${j.items.length} 채점 완료</span>
-      <button class="btn ghost sm" onclick="STATE.judge=null;render()">로그아웃</button>
-    </div>
-    <p class="lead" style="margin-bottom:18px">각 프로그램에 <b>0~100점</b>을 입력하면 자동 저장됩니다. 언제든 다시 수정할 수 있습니다.</p>
-    <div class="grid" id="jlist">
-      ${j.items.map((it,idx)=>judgeCard(it,idx)).join("")}
-    </div>`;
+  const j=STATE.judge, scored=j.items.filter(i=>i.내점수!=="").length;
+  view.innerHTML=`<div class="toolbar"><div><div class="eyebrow">심사</div><h1 style="margin:6px 0 0">${esc(j.심사위원명)} 위원</h1></div><span class="spacer"></span>
+      <span class="badge"><span class="pip"></span>${scored} / ${j.items.length} 채점 완료</span><button class="btn ghost sm" onclick="STATE.judge=null;render()">로그아웃</button></div>
+    <p class="lead" style="margin-bottom:18px">각 제안에 <b>0~100점</b>을 입력하면 자동 저장됩니다. 「출력용 보기」로 제안서를 인쇄하거나 PDF로 저장할 수 있습니다.</p>
+    <div class="grid" id="jlist">${j.items.map((it,idx)=>judgeCard(it,idx)).join("")}</div>`;
 }
 function judgeCard(it,idx){
-  const money = (it.총사업비||it.신청금액) ? `<p class="kv"><b>총사업비</b> ${esc(it.총사업비||"-")} · <b>신청금액</b> ${esc(it.신청금액||"-")}</p>` : "";
-  return `<div class="item" id="jc_${idx}">
-    <div style="display:flex;gap:14px;align-items:flex-start">
-      <div style="flex:1">
-        <h3>${esc(it.사업명)}</h3>
-        <div class="meta">${esc(it.성함)}${it.소속?` · ${esc(it.소속)}`:""}${it.직책?` · ${esc(it.직책)}`:""}${it.서비스지역?` · ${esc(it.서비스지역)}`:""}</div>
-        ${it.사업의필요성?`<p><b class="kv">사업의 필요성</b><br>${nl(it.사업의필요성)}</p>`:""}
-        ${it.서비스대상및실인원?`<p><b class="kv">서비스 대상 및 실인원</b><br>${nl(it.서비스대상및실인원)}</p>`:""}
-        ${it.사업목적및목표?`<p><b class="kv">사업 목적 및 목표</b><br>${nl(it.사업목적및목표)}</p>`:""}
-        <p><b class="kv">사업 내용</b><br>${nl(it.사업내용)}</p>
-        ${it.기대효과?`<p><b class="kv">기대효과</b><br>${nl(it.기대효과)}</p>`:""}
-        ${money}
-        ${it.예산계획?`<p><b class="kv">예산계획</b><br>${nl(it.예산계획)}</p>`:""}
-      </div>
-      <div class="center" style="flex:none;width:120px">
-        <label>점수 (0~100)</label>
-        <input class="score-in" type="number" min="0" max="100" value="${it.내점수}" id="sc_${idx}"
-          onchange="saveScore('${it.신청ID}',${idx})" />
-        <div class="hint" id="scmsg_${idx}">&nbsp;</div>
-      </div>
+  const sec=(l,v)=>v?`<p><b class="kv">${l}</b><br>${nl(v)}</p>`:"";
+  return `<div class="item" id="jc_${idx}"><div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+    <div style="flex:1;min-width:240px">
+      <span class="chipf">${esc(it.제안분야)}</span>
+      <h3 style="margin-top:8px">${esc(it.제안사업명)}</h3>
+      <div class="meta">${esc(it.성명)}${it.소속기관?` · ${esc(it.소속기관)}`:""} · 접수번호 ${esc(it.신청ID)}</div>
+      <p style="font-weight:600">${nl(it.한줄소개)}</p>
+      ${sec("제안 배경 및 필요성",it.배경및필요성)}${sec("참여대상 및 예상 인원",it.참여대상및예상인원)}${sec("주요 내용 및 운영방법",it.주요내용및운영방법)}
+      ${sec("기존 사업과의 차별점",it.기존사업차별점)}${sec("기대효과",it.기대효과)}${sec("예상 추진시기 및 기간",it.예상추진시기)}${sec("예상 소요예산",it.예상소요예산)}
+      ${it.참고자료?`<p><b class="kv">참고자료</b><br><a href="${esc(it.참고자료)}" target="_blank" style="color:var(--brand)">첨부파일 열기 ↗</a></p>`:""}
+      <button class="btn ghost sm" type="button" onclick="printProposal(${idx})" style="margin-top:6px">출력용 보기</button>
     </div>
-  </div>`;
+    <div class="center" style="flex:none;width:120px"><label>점수 (0~100)</label>
+      <input class="score-in" type="number" min="0" max="100" value="${it.내점수}" id="sc_${idx}" onchange="saveScore('${esc(it.신청ID)}',${idx})"><div class="hint" id="scmsg_${idx}">&nbsp;</div></div>
+  </div></div>`;
 }
 async function saveScore(appId,idx){
-  const v=$("#sc_"+idx).value;
-  const msg=$("#scmsg_"+idx);
-  if(v==="") { msg.textContent=""; return; }
+  const v=$("#sc_"+idx).value, msg=$("#scmsg_"+idx); if(v==="") { msg.textContent=""; return; }
   msg.innerHTML='<span class="spin"></span>';
   const r=await apiPost({action:"saveScore",judge:STATE.judge.심사위원명,appId,score:Number(v)});
-  msg.innerHTML = r.ok ? '<span style="color:#1c6b45;font-weight:700">✓ 저장됨</span>' : `<span style="color:var(--warn)">${esc(r.error)}</span>`;
+  msg.innerHTML=r.ok?'<span style="color:#1c6b45;font-weight:700">✓ 저장됨</span>':`<span style="color:var(--warn)">${esc(r.error)}</span>`;
+}
+function printProposal(idx){
+  const it=STATE.judge.items[idx];
+  const rows=[["제안분야",it.제안분야],["제안 한 줄 소개",it.한줄소개],["제안자",`${it.성명||""}${it.소속기관?" · "+it.소속기관:""}`],["제안 배경 및 필요성",it.배경및필요성],["참여대상 및 예상 인원",it.참여대상및예상인원],["주요 내용 및 운영방법",it.주요내용및운영방법],["기존 사업과의 차별점",it.기존사업차별점],["기대효과",it.기대효과],["예상 추진시기 및 기간",it.예상추진시기],["예상 소요예산",it.예상소요예산],["참고자료",it.참고자료]];
+  const w=window.open("","_blank");
+  w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><title>${esc(it.제안사업명)}</title>
+  <style>body{font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;max-width:800px;margin:30px auto;padding:0 20px;color:#111}.top{font-size:12px;color:#666}h1{font-size:22px;margin:4px 0 2px}.sub{color:#666;font-size:13px;margin-bottom:18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:10px 12px;vertical-align:top;font-size:13.5px;line-height:1.65}th{width:160px;background:#f3f5f4;text-align:left}@media print{body{margin:0}}</style></head>
+  <body><div class="top">서울특별시사회복지사협회 · 회원참여예산제 제안서</div><h1>${esc(it.제안사업명)}</h1><div class="sub">접수번호 ${esc(it.신청ID)}</div>
+  <table>${rows.map(([k,v])=>`<tr><th>${k}</th><td>${v?nl(v):"-"}</td></tr>`).join("")}</table>
+  <script>window.onload=function(){window.print();}<\/script></body></html>`);
+  w.document.close();
 }
 
 /* ================= 관리자 ================= */
-function viewAdmin(view){
-  if (STATE.admin) return renderAdmin(view);
-  view.innerHTML=`
-    <div class="eyebrow">관리자</div>
-    <h1>관리자 로그인</h1>
-    <div class="card pad" style="margin-top:20px;max-width:420px">
-      <div id="aMsg"></div>
-      <label class="req">관리자 비밀번호</label>
-      <input id="apw" type="password" onkeydown="if(event.key==='Enter')adminLogin()" />
-      <button class="btn block" style="margin-top:16px" id="abtn" onclick="adminLogin()">로그인</button>
-    </div>`;
-}
 let ADMIN_PW="";
+function viewAdmin(view){
+  if(STATE.admin) return renderAdmin(view);
+  view.innerHTML=`<div class="eyebrow">관리자</div><h1>관리자 로그인</h1>
+    <div class="card pad" style="margin-top:20px;max-width:420px"><div id="aMsg"></div>
+      <label class="req">관리자 비밀번호</label><input id="apw" type="password" onkeydown="if(event.key==='Enter')adminLogin()">
+      <button class="btn block" style="margin-top:16px" id="abtn" onclick="adminLogin()">로그인</button></div>`;
+}
 async function adminLogin(){
-  ADMIN_PW=$("#apw").value;
-  const btn=$("#abtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 확인 중';
-  const r=await apiPost({action:"adminData",password:ADMIN_PW});
-  btn.disabled=false; btn.textContent="로그인";
-  if(r.ok){ STATE.admin=r; renderAdmin($("#view")); }
-  else $("#aMsg").innerHTML=`<div class="err">${esc(r.error||"로그인 실패")}</div>`;
+  ADMIN_PW=$("#apw").value; const btn=$("#abtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 확인 중';
+  const r=await apiPost({action:"adminData",password:ADMIN_PW}); btn.disabled=false; btn.textContent="로그인";
+  if(r.ok){ STATE.admin=r; renderAdmin($("#view")); } else $("#aMsg").innerHTML=`<div class="err">${esc(r.error||"로그인 실패")}</div>`;
 }
-async function reloadAdmin(){
-  const r=await apiPost({action:"adminData",password:ADMIN_PW});
-  if(r.ok){ STATE.admin=r; renderAdmin($("#view")); }
-}
+async function reloadAdmin(){ const r=await apiPost({action:"adminData",password:ADMIN_PW}); if(r.ok){ STATE.admin=r; renderAdmin($("#view")); } }
 function renderAdmin(view){
-  const d=STATE.admin, c=d.config;
-  const N=c.본선개수;
-  const stages=["신청","심사","투표","종료"];
-  view.innerHTML=`
-    <div class="toolbar">
-      <div><div class="eyebrow">관리자</div><h1 style="margin:6px 0 0">${esc(c.행사명)}</h1></div>
-      <span class="spacer"></span>
-      <button class="btn ghost sm" onclick="reloadAdmin()">새로고침</button>
-      <button class="btn ghost sm" onclick="STATE.admin=null;render()">로그아웃</button>
-    </div>
-
+  const d=STATE.admin, c=d.config, N=c.본선개수, stages=["신청","심사","투표","종료"];
+  view.innerHTML=`<div class="toolbar"><div><div class="eyebrow">관리자</div><h1 style="margin:6px 0 0">${esc(c.행사명)}</h1></div><span class="spacer"></span>
+      <button class="btn ghost sm" onclick="exportExcel()">엑셀 다운로드</button><button class="btn ghost sm" onclick="reloadAdmin()">새로고침</button><button class="btn ghost sm" onclick="STATE.admin=null;render()">로그아웃</button></div>
+    <div class="card pad" style="margin-bottom:16px"><h2>단계 관리</h2>${stageTimeline(c.단계)}
+      <div class="toolbar" style="margin:16px 0 0">${stages.map(s=>`<button class="btn ${s===c.단계?'':'ghost'} sm" onclick="setStage('${s}')">${{"신청":"제안 접수","심사":"심사 진행","투표":"투표 개시","종료":"결과 발표"}[s]}</button>`).join("")}</div><div id="stageMsg"></div></div>
     <div class="card pad" style="margin-bottom:16px">
-      <h2>단계 관리</h2>
-      ${stageTimeline(c.단계)}
-      <div class="toolbar" style="margin:16px 0 0">
-        ${stages.map(s=>`<button class="btn ${s===c.단계?'':'ghost'} sm" onclick="setStage('${s}')">${{"신청":"신청 접수","심사":"심사 진행","투표":"투표 개시","종료":"결과 발표"}[s]}</button>`).join("")}
-      </div>
-      <div id="stageMsg"></div>
-    </div>
-
-    <div class="card pad" style="margin-bottom:16px">
-      <div class="toolbar" style="margin-bottom:6px">
-        <h2 style="margin:0">1차 심사 집계 · 본선 ${N}개 확정</h2>
-        <span class="spacer"></span>
-        <span class="badge">심사위원 ${d.judgeCount}명 · 신청 ${d.applications.length}건</span>
-      </div>
-      <p class="hint">체크박스로 본선 진출 <b>${N}개</b>를 선택한 뒤 확정하세요. 평균점수 내림차순으로 정렬됩니다.</p>
-      <div style="overflow:auto;margin-top:12px">
-      <table>
-        <thead><tr>
-          <th style="width:34px">본선</th><th>사업명</th><th>신청자</th>
-          <th class="num">채점</th><th class="num">평균</th><th class="num">총점</th>
-        </tr></thead>
-        <tbody>
-        ${d.applications.map(a=>`<tr class="${a.본선?'fin':''}">
-          <td><input type="checkbox" class="chk fchk" value="${esc(a.신청ID)}" ${a.본선?'checked':''}></td>
-          <td><b>${esc(a.사업명)}</b></td>
-          <td>${esc(a.성함)}<div class="hint">${esc(a.소속||"")}${a.직책?` · ${esc(a.직책)}`:""}</div></td>
-          <td class="num">${a.채점수}</td>
-          <td class="num"><b>${a.평균}</b></td>
-          <td class="num">${a.총점}</td>
-        </tr>`).join("")}
-        </tbody>
-      </table>
-      </div>
-      <div class="toolbar" style="margin:16px 0 0">
-        <button class="btn sm" onclick="confirmFinalists(${N})">선택한 항목 본선 확정</button>
-        <span class="hint" id="finMsg">현재 본선 ${d.finalists.length}개 확정됨</span>
-      </div>
-    </div>
-
-    <div class="card pad">
-      <div class="toolbar" style="margin-bottom:6px">
-        <h2 style="margin:0">최종 결과 (심사 50% + 투표 50%)</h2>
-        <span class="spacer"></span>
-        <span class="badge">총 투표수 ${d.voteTotal}표</span>
-      </div>
-      ${renderResultsBlock(d.results)}
-    </div>`;
+      <div class="toolbar" style="margin-bottom:6px"><h2 style="margin:0">참여위원회 심사 집계 · 본선 ${N}건 확정</h2><span class="spacer"></span><span class="badge">심사위원 ${d.judgeCount}명 · 제안 ${d.applications.length}건</span></div>
+      <p class="hint">체크박스로 본선 진출 <b>${N}건</b>을 선택한 뒤 확정하세요. 평균점수 내림차순으로 정렬됩니다.</p>
+      <div style="overflow:auto;margin-top:12px"><table><thead><tr><th style="width:34px">본선</th><th>제안 사업명</th><th>분야</th><th>제안자</th><th class="num">채점</th><th class="num">평균</th></tr></thead><tbody>
+        ${d.applications.map(a=>`<tr class="${a.본선?'fin':''}"><td><input type="checkbox" class="chk fchk" value="${esc(a.신청ID)}" ${a.본선?'checked':''}></td>
+          <td><b>${esc(a.제안사업명)}</b></td><td><span class="chipf">${esc(a.제안분야)}</span></td><td>${esc(a.성명)}<div class="hint" style="margin:0">${esc(a.소속기관||"")}</div></td>
+          <td class="num">${a.채점수}</td><td class="num"><b>${a.평균}</b></td></tr>`).join("")}</tbody></table></div>
+      <div class="toolbar" style="margin:16px 0 0"><button class="btn sm" onclick="confirmFinalists(${N})">선택한 항목 본선 확정</button><span class="hint" id="finMsg" style="margin:0">현재 본선 ${d.finalists.length}건 확정됨</span></div></div>
+    <div class="card pad"><div class="toolbar" style="margin-bottom:6px"><h2 style="margin:0">최종 결과 (위원회 50% + 회원투표 50%)</h2><span class="spacer"></span><span class="badge">총 투표수 ${d.voteTotal}표</span></div>${renderResultsBlock(d.results)}</div>`;
 }
 function renderResultsBlock(res){
   if(!res||!res.length) return `<p class="muted" style="margin-top:10px">본선을 확정하면 결과가 계산됩니다.</p>`;
-  const top3=res.slice(0,3);
-  return `
-    <div class="grid" style="margin:14px 0 20px">
-      ${top3.map(r=>`<div class="rankcard r${r.순위}">
-        <div class="no">${r.순위}</div>
-        <div><b>${esc(r.사업명)}</b><div class="hint">${esc(r.성함)}${r.소속?` · ${esc(r.소속)}`:""}</div></div>
-        <div class="score"><b>${r.최종점수}</b><div class="hint">심사 ${r.심사점수} + 투표 ${r.투표점수}</div></div>
-      </div>`).join("")}
-    </div>
-    <div style="overflow:auto">
-    <table>
-      <thead><tr><th class="num">순위</th><th>사업명</th><th class="num">심사평균</th><th class="num">심사점수</th><th class="num">득표수</th><th class="num">투표점수</th><th class="num">최종점수</th></tr></thead>
-      <tbody>${res.map(r=>`<tr class="${r.순위<=3?'fin':''}">
-        <td class="num">${r.순위}</td><td>${esc(r.사업명)}</td>
-        <td class="num">${r.심사평균}</td><td class="num">${r.심사점수}</td>
-        <td class="num">${r.득표수}</td><td class="num">${r.투표점수}</td>
-        <td class="num"><b>${r.최종점수}</b></td>
-      </tr>`).join("")}</tbody>
-    </table></div>`;
+  return `<div class="grid" style="margin:14px 0 20px">${res.filter(r=>r.시상).map(r=>`<div class="rankcard ${r.순위<=3?'r'+r.순위:'rx'}"><div class="no">${esc(r.시상)}</div>
+      <div><span class="chipf">${esc(r.제안분야)}</span> <b>${esc(r.제안사업명)}</b></div>
+      <div class="score"><b>${r.최종점수}</b><div class="hint" style="margin:0">심사 ${r.심사점수} + 투표 ${r.투표점수}</div></div></div>`).join("")}</div>
+    <div style="overflow:auto"><table><thead><tr><th class="num">순위</th><th>제안 사업명</th><th class="num">심사평균</th><th class="num">심사점수</th><th class="num">득표수</th><th class="num">투표점수</th><th class="num">최종</th></tr></thead>
+    <tbody>${res.map(r=>`<tr class="${r.시상?'fin':''}"><td class="num">${r.순위}</td><td>${esc(r.제안사업명)}</td><td class="num">${r.심사평균}</td><td class="num">${r.심사점수}</td><td class="num">${r.득표수}</td><td class="num">${r.투표점수}</td><td class="num"><b>${r.최종점수}</b></td></tr>`).join("")}</tbody></table></div>`;
 }
-async function setStage(stage){
-  const r=await apiPost({action:"setStage",password:ADMIN_PW,stage});
-  if(r.ok){ STATE.config=null; STATE.admin.config.단계=stage; reloadAdmin(); }
-  else $("#stageMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`;
-}
+async function setStage(stage){ const r=await apiPost({action:"setStage",password:ADMIN_PW,stage}); if(r.ok){ STATE.config=null; reloadAdmin(); } else $("#stageMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`; }
 async function confirmFinalists(N){
-  const ids=[...document.querySelectorAll(".fchk:checked")].map(c=>c.value);
-  const msg=$("#finMsg");
-  if(ids.length!==N && !confirm(`본선 개수(${N}개)와 다릅니다. 선택한 ${ids.length}개로 확정할까요?`)) return;
+  const ids=[...document.querySelectorAll(".fchk:checked")].map(c=>c.value), msg=$("#finMsg");
+  if(ids.length!==N && !confirm(`본선 건수(${N}건)와 다릅니다. 선택한 ${ids.length}건으로 확정할까요?`)) return;
   msg.innerHTML='<span class="spin"></span> 저장 중';
-  const r=await apiPost({action:"setFinalists",password:ADMIN_PW,ids});
-  if(r.ok){ reloadAdmin(); } else msg.innerHTML=`<span style="color:var(--warn)">${esc(r.error)}</span>`;
+  const r=await apiPost({action:"setFinalists",password:ADMIN_PW,ids}); if(r.ok) reloadAdmin(); else msg.innerHTML=`<span style="color:var(--warn)">${esc(r.error)}</span>`;
+}
+async function exportExcel(){
+  const r=await apiPost({action:"exportData",password:ADMIN_PW}); if(!r.ok){ alert(r.error||"다운로드 실패"); return; }
+  if(typeof XLSX==="undefined"){ alert("엑셀 라이브러리를 불러오지 못했습니다. 네트워크를 확인해 주세요."); return; }
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r.신청내역),"신청내역");
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r.심사집계),"심사집계");
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r.투표집계),"투표집계");
+  XLSX.writeFile(wb,`회원참여예산제_신청내역_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 /* ================= 회원 투표 ================= */
 function viewVote(view){
   const stage=STATE.config.단계;
   if(stage==="종료") return renderFinalPublic(view);
-  if(stage!=="투표"){
-    view.innerHTML=`<div class="card pad center"><h2>투표 기간이 아닙니다</h2><p class="muted">회원 투표가 열리면 이곳에서 참여할 수 있습니다.</p><button class="btn ghost" onclick="go('')">처음으로</button></div>`;
-    return;
-  }
+  if(stage!=="투표"){ view.innerHTML=`<div class="card pad center"><h2>투표 기간이 아닙니다</h2><p class="muted">회원 투표가 열리면 이곳에서 참여할 수 있습니다.</p><button class="btn ghost" onclick="go('')">처음으로</button></div>`; return; }
   if(!STATE.member) return renderVoteAuth(view);
   return renderBallot(view);
 }
 function renderVoteAuth(view){
-  view.innerHTML=`
-    <div class="eyebrow">STEP 3 · 회원 투표</div>
-    <h1>본인 확인</h1>
-    <p class="lead">올해 회비를 납부한 회원만 투표할 수 있습니다. 성함과 생년월일 6자리로 확인합니다.</p>
-    <div class="card pad" style="margin-top:20px;max-width:440px">
-      <div id="vMsg"></div>
-      <div class="grid">
-        <div><label class="req">성함</label><input id="vname" placeholder="홍길동" /></div>
-        <div><label class="req">생년월일 6자리</label><input id="vbirth" placeholder="예: 901231" maxlength="6" inputmode="numeric" /></div>
-      </div>
+  view.innerHTML=`<div class="eyebrow">회원 투표</div><h1>본인 확인</h1>
+    <p class="lead">2026년 회비를 납부한 회원만 투표할 수 있습니다. 성함과 생년월일 6자리로 확인합니다.</p>
+    <div class="card pad" style="margin-top:20px;max-width:440px"><div id="vMsg"></div>
+      <div class="grid"><div><label class="req">성함</label><input id="vname" placeholder="홍길동"></div>
+        <div><label class="req">생년월일 6자리</label><input id="vbirth" placeholder="예: 901231" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')memberVerify()"></div></div>
       <button class="btn block" style="margin-top:16px" id="vbtn" onclick="memberVerify()">확인하고 투표하기</button>
-      <p class="hint">투표는 1인 1회만 참여할 수 있으며, 입력하신 정보는 자격 확인 용도로만 사용됩니다.</p>
-    </div>`;
+      <p class="hint">투표는 1인 1회만 참여할 수 있으며, 입력하신 정보는 자격 확인 용도로만 사용됩니다.</p></div>`;
 }
 async function memberVerify(){
-  const name=$("#vname").value.trim(), birth=$("#vbirth").value.replace(/\D/g,"");
-  const btn=$("#vbtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 확인 중';
-  const r=await apiPost({action:"verifyMember",name,birth});
-  btn.disabled=false; btn.textContent="확인하고 투표하기";
-  if(r.ok){ STATE.member={name,birth}; renderBallot($("#view")); }
-  else $("#vMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`;
+  const name=$("#vname").value.trim(), birth=$("#vbirth").value.replace(/\D/g,""); const btn=$("#vbtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 확인 중';
+  const r=await apiPost({action:"verifyMember",name,birth}); btn.disabled=false; btn.textContent="확인하고 투표하기";
+  if(r.ok){ STATE.member={name,birth}; renderBallot($("#view")); } else $("#vMsg").innerHTML=`<div class="err">${esc(r.error)}</div>`;
 }
 async function renderBallot(view){
-  view.innerHTML=`<div class="skeleton"><span class="spin"></span> 본선 프로그램을 불러오는 중…</div>`;
-  const r=await apiGet("ballot");
-  const items=r.items||[];
+  view.innerHTML=`<div class="skeleton"><span class="spin"></span> 후보 제안을 불러오는 중…</div>`;
+  const r=await apiGet("ballot"); const items=r.items||[];
   const nf=(l,v)=>v?`<div class="nf"><span class="lbl">${l}</span><span class="nt">${nl(v)}</span></div>`:"";
-  view.innerHTML=`
-    <div class="toolbar"><div><div class="eyebrow">회원 투표</div><h1 style="margin:6px 0 0">가장 지지하는 프로그램 1개</h1></div></div>
-    <p class="lead" style="margin-bottom:4px">본선 진출 ${items.length}개 중 <b>딱 하나</b>를 골라 붙여 주세요. 카드를 눌러 선택하고, 아래 버튼으로 제출합니다. 제출 후에는 변경할 수 없습니다.</p>
+  view.innerHTML=`<div class="toolbar"><div><div class="eyebrow">회원 투표</div><h1 style="margin:6px 0 0">가장 지지하는 제안 1개</h1></div></div>
+    <p class="lead" style="margin-bottom:4px">참여위원회가 선정한 최종 후보 ${items.length}건 중 <b>딱 하나</b>를 골라 주세요. 카드를 눌러 선택하고 아래 버튼으로 제출합니다. 제출 후에는 변경할 수 없습니다.</p>
     <div id="vMsg2"></div>
-    <div class="deck" id="ballot">
-      ${items.map(it=>`<div class="note" data-id="${esc(it.신청ID)}" onclick="pickVote(this)" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pickVote(this);}">
-        <span class="pin"></span>
-        <div class="check">✓</div>
-        <h3>${esc(it.사업명)}</h3>
-        <div class="who">${esc(it.성함)}${it.소속?` · ${esc(it.소속)}`:""}${it.직책?` · ${esc(it.직책)}`:""}</div>
-        ${nf("필요성", it.사업의필요성)}
-        ${nf("대상·인원", it.서비스대상및실인원)}
-        ${nf("지역", it.서비스지역)}
-        ${nf("목적·목표", it.사업목적및목표)}
-        ${nf("사업내용", it.사업내용)}
-        ${nf("기대효과", it.기대효과)}
-        ${(fmtWon(it.총사업비)||fmtWon(it.신청금액))?`<div class="budget"><span>총사업비 ${fmtWon(it.총사업비)||"-"}</span><span>신청금액 ${fmtWon(it.신청금액)||"-"}</span></div>`:""}
-      </div>`).join("")}
-    </div>
-    <div style="position:sticky;bottom:16px;margin-top:24px">
-      <button class="btn block" id="voteBtn" disabled onclick="castVote()">투표하기</button>
-    </div>`;
+    <div class="deck" id="ballot">${items.map(it=>`<div class="note" data-id="${esc(it.신청ID)}" onclick="pickVote(this)" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pickVote(this);}">
+        <span class="pin"></span><div class="check">✓</div>
+        <span class="chipf">${esc(it.제안분야)}</span><br><h3 style="margin-top:6px">${esc(it.제안사업명)}</h3>
+        <div class="one">${nl(it.한줄소개)}</div>
+        ${nf("대상·인원",it.참여대상및예상인원)}${nf("주요 내용",it.주요내용및운영방법)}${nf("기대효과",it.기대효과)}
+      </div>`).join("")}</div>
+    <div style="position:sticky;bottom:calc(16px + env(safe-area-inset-bottom,0px));margin-top:24px"><button class="btn block" id="voteBtn" disabled onclick="castVote()">투표하기</button></div>`;
 }
 let PICKED=null;
-function pickVote(el){
-  document.querySelectorAll("#ballot .note").forEach(p=>p.classList.remove("on"));
-  el.classList.add("on"); PICKED=el.dataset.id;
-  const b=$("#voteBtn"); b.disabled=false; b.textContent="선택한 프로그램에 투표하기";
-}
+function pickVote(el){ document.querySelectorAll("#ballot .note").forEach(p=>p.classList.remove("on")); el.classList.add("on"); PICKED=el.dataset.id; const b=$("#voteBtn"); b.disabled=false; b.textContent="선택한 제안에 투표하기"; }
 async function castVote(){
-  if(!PICKED) return;
-  if(!confirm("선택한 프로그램에 투표하시겠습니까? 제출 후 변경할 수 없습니다.")) return;
+  if(!PICKED) return; if(!confirm("선택한 제안에 투표하시겠습니까? 제출 후 변경할 수 없습니다.")) return;
   const btn=$("#voteBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 제출 중';
   const r=await apiPost({action:"submitVote",name:STATE.member.name,birth:STATE.member.birth,appId:PICKED});
-  if(r.ok){
-    $("#view").innerHTML=`<div class="card pad center" style="padding:48px 26px">
-      <div class="badge" style="margin:0 auto"><span class="pip"></span>투표 완료</div>
-      <h1 style="margin-top:16px">소중한 한 표 감사합니다</h1>
-      <p class="muted">최종 결과는 협회 안내와 이 페이지에서 확인하실 수 있습니다.</p>
-      <button class="btn" onclick="STATE.member=null;go('')">처음으로</button>
-    </div>`;
-  }else{ btn.disabled=false; btn.textContent="투표하기"; $("#vMsg2").innerHTML=`<div class="err">${esc(r.error)}</div>`; window.scrollTo(0,0); }
+  if(r.ok){ $("#view").innerHTML=`<div class="card pad center" style="padding:48px 26px"><div class="badge" style="margin:0 auto"><span class="pip"></span>투표 완료</div><h1 style="margin-top:16px">소중한 한 표 감사합니다</h1><p class="muted">최종 결과는 협회 안내와 이 페이지에서 확인하실 수 있습니다.</p><button class="btn" onclick="STATE.member=null;go('')">처음으로</button></div>`; window.scrollTo(0,0); }
+  else{ btn.disabled=false; btn.textContent="투표하기"; $("#vMsg2").innerHTML=`<div class="err">${esc(r.error)}</div>`; window.scrollTo(0,0); }
 }
-
-/* ================= 공개 최종결과(종료 단계) ================= */
 async function renderFinalPublic(view){
   view.innerHTML=`<div class="skeleton"><span class="spin"></span> 결과를 불러오는 중…</div>`;
-  const r=await apiGet("results");
-  const res=r.results||[];
-  const top3=res.slice(0,3);
-  view.innerHTML=`
-    <div class="eyebrow">최종 결과</div>
-    <h1>선정된 참여프로그램</h1>
-    <p class="lead">심사위원 심사 50%와 회원 투표 50%를 반영한 최종 결과입니다.</p>
-    <div class="grid" style="margin:22px 0">
-      ${top3.map(r=>`<div class="rankcard r${r.순위}">
-        <div class="no">${r.순위}</div>
-        <div><b style="font-size:17px">${esc(r.사업명)}</b><div class="hint">${esc(r.성함)}${r.소속?` · ${esc(r.소속)}`:""}</div></div>
-        <div class="score"><b>${r.최종점수}</b><div class="hint">최종점수</div></div>
-      </div>`).join("")}
-    </div>
+  const r=await apiGet("results"); const res=(r.results||[]).filter(x=>x.시상);
+  view.innerHTML=`<div class="eyebrow">최종 결과</div><h1>선정된 제안</h1>
+    <p class="lead">참여위원회 심사 50%와 회원 투표 50%를 반영한 최종 결과입니다.</p>
+    <div class="grid" style="margin:22px 0">${res.map(x=>`<div class="rankcard ${x.순위<=3?'r'+x.순위:'rx'}"><div class="no">${esc(x.시상)}</div>
+      <div><span class="chipf">${esc(x.제안분야)}</span> <b style="font-size:17px">${esc(x.제안사업명)}</b><div class="hint" style="margin:2px 0 0">${esc(x.한줄소개||"")}</div></div>
+      <div class="score"><b>${x.최종점수}</b><div class="hint" style="margin:0">최종점수</div></div></div>`).join("")}</div>
     <button class="btn ghost" onclick="go('')">처음으로</button>`;
+}
+
+/* ================= 데모 모드(내장 샘플, GAS 미연결 시) ================= */
+const DEMO_DB=(()=>{
+  const P=(id,base,o)=>Object.assign({신청ID:id,_base:base,성명:"테스트회원",소속기관:"",참고자료:""},o);
+  const items=[
+    P("D001",90,{제안사업명:"사회복지사를 위한 생성형 AI 실무 워크숍",제안분야:"교육·역량강화",한줄소개:"현장 문서·보고서·홍보물 작업에 바로 쓰는 생성형 AI 활용법을 실습 중심으로 배우는 4회기 워크숍입니다.",성명:"이지현",소속기관:"햇살종합사회복지관",배경및필요성:"AI 도구가 빠르게 확산되고 있지만 현장에서는 어디서부터 써야 할지 막막해하는 동료가 많습니다.",참여대상및예상인원:"서울 회원 사회복지사, 회당 30명 × 2기수(총 60명)",주요내용및운영방법:"프롬프트 기초 → 상담기록·사업계획서 초안 작성 → 홍보 콘텐츠 제작 → 업무 자동화 미니 프로젝트. 격주 토요일 오전 3시간, 실습형.",기존사업차별점:"탐서클 AI 활용법이 1회성 소개였다면, 이 과정은 4회 연속 실습으로 실제 결과물을 만들어 가져갑니다.",기대효과:"문서 작업 시간 단축과 업무 효율 향상, 활용 사례 공유 커뮤니티 형성",예상추진시기:"2026년 5~6월, 9~10월",예상소요예산:"약 600만원"}),
+    P("D002",88,{제안사업명:"회원 심리상담 바우처 지원",제안분야:"회원서비스·복지",한줄소개:"소진과 스트레스를 겪는 회원에게 전문 심리상담 3회를 무료로 이용할 수 있는 바우처를 제공합니다.",성명:"신재현",소속기관:"이음다문화가족지원센터",배경및필요성:"감정노동과 과중 업무로 소진을 호소하는 회원이 늘고 있으나 비용 부담으로 상담을 미루는 경우가 많습니다.",참여대상및예상인원:"신청 회원 선착순 60명(1인 3회)",주요내용및운영방법:"협약 상담센터 지정 → 온라인 신청 → 바우처 발급 → 상담 이용. 익명성 보장.",기존사업차별점:"신체 건강 중심이던 복지서비스를 정신건강 영역으로 확장합니다.",기대효과:"회원의 정서적 회복과 소진 예방",예상추진시기:"2026년 5~11월",예상소요예산:"약 900만원"}),
+    P("D003",86,{제안사업명:"서울 사회복지사 러닝크루",제안분야:"참여프로그램",한줄소개:"한강·남산 등 서울 곳곳을 달리며 교류하는 월 2회 정기 러닝 모임과 가을 단체 마라톤 참가 프로그램입니다.",성명:"배현우",소속기관:"한빛장애인자립센터",배경및필요성:"건강과 교류를 함께 챙길 수 있는 저비용 상시 프로그램이 부족합니다.",참여대상및예상인원:"회원 40명(기수제), 마라톤 참가 60명",주요내용및운영방법:"격주 토요일 아침 5km 러닝 → 코치 특강 2회 → 10월 단체 마라톤 참가(참가비 지원).",기존사업차별점:"등반대회가 연 1회 행사라면 러닝크루는 상시 소모임형 교류입니다.",기대효과:"회원 건강 증진, 기관을 넘는 또래 네트워크",예상추진시기:"2026년 4~10월",예상소요예산:"약 550만원"}),
+    P("D004",85,{제안사업명:"신입 사회복지사 멘토링 스쿨",제안분야:"교육·역량강화",한줄소개:"입사 3년 이내 신입 회원과 10년 차 이상 선배 회원을 1:3으로 연결해 6개월간 함께 성장하는 멘토링 프로그램입니다.",성명:"정민아",소속기관:"늘봄노인복지센터",배경및필요성:"신입 시기 이직률이 높고 기관 안에서 고민을 털어놓을 선배가 없는 경우가 많습니다.",참여대상및예상인원:"신입 회원 30명, 멘토 10명",주요내용및운영방법:"멘토·멘티 매칭 → 월 1회 그룹 모임 → 중간 워크숍 → 수료식.",기존사업차별점:"관계 기반의 지속적 지지 체계를 만듭니다.",기대효과:"소속감과 직무 적응력 향상, 조기 이직 감소",예상추진시기:"2026년 4~9월",예상소요예산:"약 450만원"}),
+    P("D005",83,{제안사업명:"1박 2일 힐링 리트릿(섬 캠프)",제안분야:"참여프로그램",한줄소개:"휴대폰을 잠시 내려놓고 섬에서 보내는 1박 2일 쉼 중심 리트릿입니다.",성명:"천예린",소속기관:"마음뜰아동보호전문기관",배경및필요성:"기존 힐링캠프는 당일형이라 깊은 쉼이 어렵다는 의견이 많았습니다.",참여대상및예상인원:"회원 40명",주요내용및운영방법:"인천 섬 1박 2일, 숲·바다 걷기 명상, 모닥불 토크, 아침 요가.",기존사업차별점:"힐링캠프를 숙박형으로 심화하고 디지털 디톡스 컨셉을 더했습니다.",기대효과:"소진 회복, 회원 간 깊은 교류",예상추진시기:"2026년 6월",예상소요예산:"약 1,000만원"}),
+    P("D006",82,{제안사업명:"현장 아이디어 해커톤 「복지 메이커스」",제안분야:"자유제안",한줄소개:"현장의 불편함을 가져와 2일간 팀으로 해결책을 만들어 보는 사회복지사 해커톤입니다.",성명:"권나연",소속기관:"새길노숙인지원센터",배경및필요성:"현장에는 좋은 아이디어가 많지만 실행으로 옮길 기회와 동료가 부족합니다.",참여대상및예상인원:"회원 40명(5인 × 8팀)",주요내용및운영방법:"사전 아이디어 접수 → 팀 빌딩 → 1박 2일 해커톤 → 발표·시상 → 우수작 협회 사업 연계.",기존사업차별점:"교육·참여·서비스가 결합된 형식으로 결과물이 실제 사업으로 이어집니다.",기대효과:"현장 주도 혁신 문화 확산",예상추진시기:"2026년 11월",예상소요예산:"약 800만원"}),
+    P("D007",74,{제안사업명:"사회복지 데이터 리터러시 기초반",제안분야:"교육·역량강화",한줄소개:"엑셀·구글시트로 사업 데이터를 정리하고 성과 그래프를 만드는 입문 교육입니다.",성명:"류지원",배경및필요성:"성과 보고에 데이터 활용이 요구되지만 기초가 부족한 회원이 많습니다.",참여대상및예상인원:"입문 회원 25명",주요내용및운영방법:"3회 과정: 데이터 정리 → 집계 → 시각화.",기존사업차별점:"기존에 없던 데이터 활용 주제입니다.",기대효과:"성과 보고 품질 향상",예상추진시기:"2026년 7월",예상소요예산:"약 200만원"}),
+  ];
+  const judges=["심사위원1","심사위원2","심사위원3"], scores={};
+  items.forEach(it=>{ scores[it.신청ID]={}; judges.forEach((j,k)=>scores[it.신청ID][j]=Math.max(0,Math.min(100,it._base+[-3,2,-1][k]))); });
+  const finalists=items.slice().sort((a,b)=>b._base-a._base).slice(0,5).map(i=>i.신청ID);
+  const votes=[]; const w=[14,12,10,9,8]; finalists.forEach((id,i)=>{ for(let k=0;k<w[i];k++) votes.push({성명:"예시"+id+k,생년월일:"000000",신청ID:id}); });
+  const members=[["김서울","850312"],["이복지","900707"],["박나눔","780925"],["최사랑","950101"],["정열매","881230"]];
+  return {stage:"신청",items,judges,scores,finalists,votes,members,N:5};
+})();
+function demoResults(){
+  const f=DEMO_DB.finalists; if(!f.length) return [];
+  const avg={},vc={}; f.forEach(id=>{ const s=Object.values(DEMO_DB.scores[id]||{}); avg[id]=s.length?s.reduce((a,b)=>a+b,0)/s.length:0; vc[id]=DEMO_DB.votes.filter(v=>v.신청ID===id).length; });
+  const mA=Math.max(0,...f.map(id=>avg[id])), mV=Math.max(0,...f.map(id=>vc[id]));
+  const r2=n=>Math.round(n*100)/100;
+  const rows=f.map(id=>{ const it=DEMO_DB.items.find(i=>i.신청ID===id); const jp=mA?avg[id]/mA*50:0, vp=mV?vc[id]/mV*50:0;
+    return {신청ID:id,제안사업명:it.제안사업명,제안분야:it.제안분야,한줄소개:it.한줄소개,심사평균:r2(avg[id]),득표수:vc[id],심사점수:r2(jp),투표점수:r2(vp),최종점수:r2(jp+vp)}; }).sort((a,b)=>b.최종점수-a.최종점수);
+  rows.forEach((r,i)=>{ r.순위=i+1; r.시상=i<3?(i+1)+"위":(i<5?"장려상":""); }); return rows;
+}
+async function mockApi(action,b){
+  await new Promise(r=>setTimeout(r,250)); const D=DEMO_DB;
+  const cfg={행사명:"2026 회원참여예산제 (미리보기)",단계:D.stage,본선개수:D.N};
+  switch(action){
+    case "config": return {ok:true,config:cfg};
+    case "submitApplication": { const id="P"+Date.now().toString().slice(-8); D.items.push(Object.assign({신청ID:id,_base:70,참고자료:b.file?"(데모) "+b.file.name:""},b)); return {ok:true,id,제안사업명:b.제안사업명,접수일시:new Date().toLocaleString("ko-KR")}; }
+    case "judgeLogin": { if(String(b.code)!=="1001"&&String(b.code)!=="1002"&&String(b.code)!=="1003") return {ok:false,error:"코드가 올바르지 않습니다. (데모: 1001)"}; const name="심사위원"+String(b.code).slice(-1);
+      return {ok:true,심사위원명:name,stage:D.stage,items:D.items.map(it=>Object.assign({},it,{내점수:(D.scores[it.신청ID]||{})[name]??""}))}; }
+    case "saveScore": (D.scores[b.appId]=D.scores[b.appId]||{})[b.judge]=Number(b.score); return {ok:true};
+    case "adminData": { if(b.password!=="admin1234") return {ok:false,error:"관리자 비밀번호가 올바르지 않습니다. (데모: admin1234)"};
+      const apps=D.items.map(it=>{ const s=Object.values(D.scores[it.신청ID]||{}); const sum=s.reduce((a,c)=>a+c,0); return {신청ID:it.신청ID,제안사업명:it.제안사업명,제안분야:it.제안분야,성명:it.성명,소속기관:it.소속기관,채점수:s.length,총점:sum,평균:s.length?Math.round(sum/s.length*100)/100:0,본선:D.finalists.includes(it.신청ID)}; }).sort((a,b)=>b.평균-a.평균);
+      return {ok:true,config:cfg,judgeCount:3,applications:apps,finalists:D.finalists,voteTotal:D.votes.length,results:demoResults()}; }
+    case "exportData": { const H=["신청ID","제안사업명","제안분야","한줄소개","성명","소속기관","배경및필요성","참여대상및예상인원","주요내용및운영방법","기존사업차별점","기대효과","예상추진시기","예상소요예산"];
+      return {ok:true,신청내역:[H].concat(D.items.map(it=>H.map(h=>it[h]||""))),심사집계:[["신청ID","제안사업명","평균"]].concat(D.items.map(it=>{const s=Object.values(D.scores[it.신청ID]||{});return [it.신청ID,it.제안사업명,s.length?s.reduce((a,c)=>a+c,0)/s.length:""]})),투표집계:[["신청ID","득표수"]].concat(D.finalists.map(id=>[id,D.votes.filter(v=>v.신청ID===id).length]))}; }
+    case "setFinalists": D.finalists=b.ids||[]; return {ok:true};
+    case "setStage": D.stage=b.stage; return {ok:true,stage:b.stage};
+    case "ballot": return {ok:true,items:D.stage!=="투표"?[]:D.finalists.map(id=>D.items.find(i=>i.신청ID===id)).filter(Boolean)};
+    case "results": return {ok:true,results:demoResults()};
+    case "verifyMember": { const n=String(b.name||"").replace(/\s/g,""), bd=String(b.birth||""); if(!D.members.some(m=>m[0]===n&&m[1]===bd)) return {ok:false,error:"회비납부 회원 명단에서 확인되지 않습니다. (데모: 김서울/850312)"}; if(D.votes.some(v=>v.성명===n&&v.생년월일===bd)) return {ok:false,error:"이미 투표에 참여하셨습니다."}; return {ok:true}; }
+    case "submitVote": { const v=await mockApi("verifyMember",b); if(!v.ok) return v; D.votes.push({성명:String(b.name).replace(/\s/g,""),생년월일:b.birth,신청ID:b.appId}); return {ok:true}; }
+    default: return {ok:false,error:"알 수 없는 요청"};
+  }
 }
 </script>
 </body>
