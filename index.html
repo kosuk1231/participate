@@ -194,6 +194,8 @@
   .lvb input:checked+span small{opacity:.95}
   .lvb:hover span{border-color:var(--accent)}
   @media(max-width:480px){.lvb span{font-size:10.5px;padding:6px 1px}}
+  .cfg3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+  @media(max-width:600px){.cfg3{grid-template-columns:1fr}}
   .sched{display:grid;gap:6px;font-size:14px}
   .sched div{display:grid;grid-template-columns:1fr auto;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
   .sched div:last-child{border-bottom:none}
@@ -692,6 +694,15 @@ function renderAdmin(view){
     <div class="card pad" style="margin-bottom:16px"><h2>단계 관리</h2>${stageTimeline(c.단계)}
       <div class="toolbar" style="margin:16px 0 0">${stages.map(s=>`<button class="btn ${s===c.단계?'':'ghost'} sm" onclick="setStage('${s}')">${{"신청":"제안 접수","심사":"심사 진행","투표":"투표 개시","종료":"결과 발표"}[s]}</button>`).join("")}</div><div id="stageMsg"></div>
       <div style="margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)">
+        <b style="font-size:14px">기본 설정</b> <span class="hint" style="display:inline;margin:0">('설정' 시트 값 · 안내문·심사·투표 화면 전체에 반영)</span>
+        <div class="cfg3" style="margin-top:10px">
+          <div><label>행사명</label><input id="cfg_name" value="${esc(c.행사명)}"></div>
+          <div><label>1차 심사 선정 건수(본선)</label><input id="cfg_n" type="number" min="1" value="${c.본선개수}"></div>
+          <div><label>회원 1인 투표 선택 건수</label><input id="cfg_k" type="number" min="1" value="${c.투표선택수||2}"></div>
+        </div>
+        <div class="toolbar" style="margin:10px 0 0"><button class="btn sm" onclick="saveConfig()">설정 저장</button><span class="hint" id="cfgMsg" style="margin:0">사업계획서 기준: 본선 5건 · 투표 2건 선택</span></div>
+      </div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)">
         <div class="toolbar" style="margin:0 0 6px"><b style="font-size:14px">회원투표 서버 (Supabase)</b>
           <span class="badge" style="background:${d.supabase?'#eaf6f0':'#fbeeea'};color:${d.supabase?'#1c6b45':'var(--warn)'}">${d.supabase?'연동됨 · 투표는 Supabase가 처리':'미연동 · 투표도 Apps Script가 처리(동시접속 취약)'}</span></div>
         <p class="hint" style="margin:0 0 10px">본선 ${d.finalists.length}건 · 회원명단 ${d.memberCount}명. 「투표 개시」를 누르면 자동 동기화되며, 명단을 고친 뒤에는 수동 동기화를 눌러 주세요. 투표가 끝나면 기록을 시트로 가져와 보관할 수 있습니다.</p>
@@ -731,6 +742,13 @@ async function confirmFinalists(N){
   const r=await apiPost({action:"setFinalists",password:ADMIN_PW,ids});
   if(r.ok){ await reloadAdmin(); if(r.note){ const s=$("#syncMsg"); if(s) s.innerHTML=`<span style="color:${/실패/.test(r.note)?'var(--warn)':'#1c6b45'}">${esc(r.note)}</span>`; } }
   else msg.innerHTML=`<span style="color:var(--warn)">${esc(r.error)}</span>`;
+}
+async function saveConfig(){
+  const m=$("#cfgMsg"); m.innerHTML='<span class="spin"></span> 저장 중';
+  const r=await apiPost({action:"setConfig",password:ADMIN_PW,행사명:$("#cfg_name").value.trim(),본선개수:$("#cfg_n").value,투표선택수:$("#cfg_k").value});
+  if(!r.ok){ m.innerHTML=`<span style="color:var(--warn)">${esc(r.error)}</span>`; return; }
+  STATE.config=null; await reloadAdmin();
+  const s=$("#cfgMsg"); if(s) s.innerHTML=`<span style="color:#1c6b45">${esc(r.msg)}</span>`;
 }
 async function syncSupabase(){
   const s=$("#syncMsg"); s.innerHTML='<span class="spin"></span> 동기화 중…';
@@ -854,7 +872,7 @@ const DEMO_DB=(()=>{
   for(let v=0;v<60;v++){ const pool=finalists.map((_,i)=>i); const picks=[]; while(picks.length<2){ const tw=pool.reduce((a,i)=>a+w[i],0); let r=Math.random()*tw, pk=pool[0]; for(const i of pool){ r-=w[i]; if(r<=0){pk=i;break;} } picks.push(finalists[pk]); pool.splice(pool.indexOf(pk),1); }
     picks.forEach(id=>votes.push({성명:"예시"+v,생년월일:"000000",신청ID:id})); }
   const members=[["김서울","850312"],["이복지","900707"],["박나눔","780925"],["최사랑","950101"],["정열매","881230"]];
-  return {stage:"신청",items,judges,scores,finalists,votes,members,N:5,K:2};
+  return {stage:"신청",items,judges,scores,finalists,votes,members,N:5,K:2,name:"2026년 회원참여예산제 「회원참여프로그램 공모」 (미리보기)"};
 })();
 function demoVoteStats(){ const counts={}, seen=new Set(); DEMO_DB.votes.forEach(v=>{ counts[v.신청ID]=(counts[v.신청ID]||0)+1; seen.add(v.성명+"|"+v.생년월일); }); return {counts,voters:seen.size,total:DEMO_DB.votes.length}; }
 function demoResults(){
@@ -866,7 +884,7 @@ function demoResults(){
 }
 async function mockApi(action,b){
   await new Promise(r=>setTimeout(r,250)); const D=DEMO_DB;
-  const cfg={행사명:"2026년 회원참여예산제 「회원참여프로그램 공모」 (미리보기)",단계:D.stage,본선개수:D.N,투표선택수:D.K};
+  const cfg={행사명:D.name,단계:D.stage,본선개수:D.N,투표선택수:D.K};
   switch(action){
     case "config": return {ok:true,config:cfg};
     case "submitApplication": { const id="P"+Date.now().toString().slice(-8); D.items.push(Object.assign({신청ID:id,_base:70,참고자료:b.file?"(데모) "+b.file.name:""},b)); return {ok:true,id,제안사업명:b.제안사업명,접수일시:new Date().toLocaleString("ko-KR")}; }
@@ -877,6 +895,7 @@ async function mockApi(action,b){
       const apps=D.items.map(it=>{ const s=Object.values(D.scores[it.신청ID]||{}); const sum=s.reduce((a,c)=>a+c.합계,0); const 항목평균={}; CRITERIA.forEach(c=>항목평균[c.key]=s.length?Math.round(s.reduce((a,x)=>a+x[c.key],0)/s.length*100)/100:0); return {신청ID:it.신청ID,제안사업명:it.제안사업명,제안분야:it.제안분야,성명:it.성명,소속기관:it.소속기관,채점수:s.length,총점:sum,평균:s.length?Math.round(sum/s.length*100)/100:0,항목평균,본선:D.finalists.includes(it.신청ID)}; }).sort((a,b)=>b.평균-a.평균);
       const vs=demoVoteStats();
       return {ok:true,config:cfg,judgeCount:3,applications:apps,finalists:D.finalists,voteTotal:vs.total,voters:vs.voters,results:demoResults(),criteria:CRITERIA,supabase:false,memberCount:D.members.length}; }
+    case "setConfig": { if(b.password!=="admin1234") return {ok:false,error:"관리자 비밀번호가 올바르지 않습니다."}; if(b.행사명) D.name=b.행사명; if(b.본선개수) D.N=parseInt(b.본선개수,10)||D.N; if(b.투표선택수) D.K=parseInt(b.투표선택수,10)||D.K; D.finalists=D.items.slice().sort((a,c)=>c._base-a._base).slice(0,D.N).map(i=>i.신청ID); return {ok:true,msg:"설정 저장 완료(데모)",config:cfg}; }
     case "syncSupabase": case "importVotes": return {ok:false,error:"미리보기 모드에서는 사용할 수 없습니다."};
     case "exportData": { const H=["신청ID","제안사업명","제안분야","한줄소개","성명","소속기관","배경및필요성","참여대상및예상인원","주요내용및운영방법","기존사업차별점","기대효과","예상추진시기","예상소요예산"];
       const vs=demoVoteStats();
