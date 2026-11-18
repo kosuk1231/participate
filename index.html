@@ -161,6 +161,8 @@
 
   /* 포스트잇 카드 덱 (회원 투표) */
   .deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:26px;align-items:start;margin-top:22px;padding:10px 6px 6px}
+  .vnote{background:#fff7e6;border:1px solid #f0d9a8;border-left:4px solid #d4a53a;border-radius:10px;padding:12px 16px;font-size:14px;line-height:1.6;color:#5a4410;margin-top:10px}
+  .vnote b{color:#3d2e06}
   .note{position:relative;border-radius:3px;padding:30px 22px 20px;cursor:pointer;color:#1f2b28;box-shadow:0 8px 18px rgba(18,48,43,.16),0 2px 4px rgba(18,48,43,.10);transition:transform .18s ease,box-shadow .18s ease}
   .note:nth-child(5n+1){background:#fdf3c0;transform:rotate(-1.5deg)}
   .note:nth-child(5n+2){background:#d6f1e2;transform:rotate(1.1deg)}
@@ -211,7 +213,7 @@
   <nav class="navlinks"><a onclick="go('judge')">심사위원</a><a onclick="go('admin')">관리자</a></nav>
 </div></header>
 <main><div class="wrap" id="view"><div class="skeleton"><span class="spin"></span> 불러오는 중…</div></div></main>
-<footer><div class="wrap">서울특별시사회복지사협회 회원조직팀 · 문의 유예리 070-5155-2112 · vgyu1016@sasw.or.kr</div></footer>
+<footer><div class="wrap">서울특별시사회복지사협회 회원조직팀 · 문의 고석우 과장 02-786-2962 · kosuk1231@sasw.or.kr</div></footer>
 
 <script>
 /* ================= 설정 ================= */
@@ -223,9 +225,9 @@ const CONFIG = {
   NOTICE_URL: "",   // 공고문 보기 링크(비우면 버튼 숨김)
   DOC_URL: "",      // 공문 다운로드 링크(비우면 버튼 숨김)
   PERIOD: "2026. 10. 12.(월) ~ 11. 4.(수) 오후 2시",
-  CONTACT: "회원조직팀 유예리 070-5155-2112 · vgyu1016@sasw.or.kr",
-  SCHEDULE: [["홍보 및 공모 접수","10. 12.(월) ~ 11. 4.(수) 14:00"],["1차 심사(참여위원회)","11. 6.(금) 상임위워크숍"],["1차 심사 결과 발표","11. 16.(월)"],["회원 온라인투표","11. 16.(월) ~ 20.(금)"],["최종 결과 발표","11. 27.(금)"]],
-  PRIZES: [["1위","50만원"],["2위","40만원"],["3위","30만원"],["장려상 2건","각 20만원"],["참여상","1만원 모바일 기프티콘(미선정 제안)"]],
+  CONTACT: "회원조직팀 고석우 과장 02-786-2962 · kosuk1231@sasw.or.kr",
+  SCHEDULE: [["홍보 및 공모 접수","10. 12.(월) ~ 11. 4.(수) 14:00"],["1차 심사(참여위원회)","11. 6.(금) 상임위워크숍"],["1차 심사 결과 발표","11. 18.(수)"],["회원 온라인투표","11. 18.(수) ~ 25.(수)"],["최종 결과 발표","11. 27.(금)"]],
+  PRIZES: [["1위","50만원"],["2위","40만원"],["3위","30만원"],["장려상 1건","20만원"],["참여상","1만원 모바일 기프티콘(미선정 제안)"]],
 };
 // 1차 심사기준(사업계획서): 위원별 50점 만점, 항목별 5단계 배점
 const CRITERIA=[
@@ -255,6 +257,21 @@ async function sbRpc(fn,params){
     return data||{ok:false,error:"응답이 없습니다."};
   }catch(e){ return {ok:false,error:"네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."}; }
 }
+
+/* 온라인투표 전체 참여 현황(참여 인원·총 투표수만 공개, 항목별 득표수는 비공개) */
+async function loadTurnout(){
+  try{
+    if(DEMO) return mockApi("turnout",{});
+    if(SUPA) return await sbRpc("mpb_turnout",{});
+    return await apiGet("turnout");
+  }catch(e){ return {ok:false}; }
+}
+async function fillTurnout(id,tpl){
+  const el=document.getElementById(id); if(!el) return;
+  const t=await loadTurnout(); if(!t||!t.ok) { el.remove(); return; }
+  el.innerHTML=tpl(Number(t.voters)||0,Number(t.total)||0);
+}
+const turnoutLine=(v,t)=>`<span class="pip"></span>온라인투표 참여 <b>${v.toLocaleString("ko-KR")}명</b> · 총 ${t.toLocaleString("ko-KR")}표`;
 
 /* ================= 분야 안내 데이터 ================= */
 const FIELDS = [
@@ -361,9 +378,10 @@ function secttl(n,t){ return `<div class="secttl"><span class="n">${n}</span><h2
 function viewHome(view){
   const c=STATE.config, stage=c.단계, N=c.본선개수;
   const cta = stage==="신청" ? `<button class="btn" onclick="go('apply')">제안 접수하기 →</button>`
-            : stage==="투표" ? `<button class="btn" onclick="go('vote')">회원 투표 참여하기 →</button>`
+            : stage==="투표" ? `<button class="btn" onclick="go('vote')">회원 투표 참여하기 →</button><p class="hint" style="margin:10px 0 0"><b>2026년 회비납부 회원</b>만 참여할 수 있습니다.</p>`
             : stage==="종료" ? `<button class="btn" onclick="go('vote')">최종 결과 보기 →</button>`
             : `<span class="badge"><span class="pip"></span>참여위원회 심사가 진행 중입니다</span>`;
+  setTimeout(()=>fillTurnout("homeTurnout",turnoutLine),0);
   view.innerHTML=`
     <div class="eyebrow">서울특별시사회복지사협회</div>
     <h1>${esc(c.행사명)}</h1>
@@ -372,20 +390,21 @@ function viewHome(view){
     <div class="card pad" style="margin-top:20px">
       <span class="badge"><span class="pip"></span>현재 단계 · ${esc({"신청":"제안 접수 중","심사":"참여위원회 심사","투표":"회원 온라인 투표","종료":"결과 발표"}[stage])}</span>
       <div style="margin-top:16px">${cta}</div>
+      ${(stage==="투표"||stage==="종료")?`<div id="homeTurnout" class="badge" style="margin-top:14px"><span class="spin" style="width:12px;height:12px"></span> 참여 현황 불러오는 중</div><p class="hint" style="margin:8px 0 0">각 제안별 득표수는 공개하지 않습니다.</p>`:""}
     </div>
     <div class="row2" style="margin-top:16px">
       <div class="card pad"><h2>선정 방법</h2>
         <p class="kv"><b>1차 심사</b> · 참여위원회가 위원별 50점 만점(필요성·실현가능성·창의성·효과성·구체성)으로 평가, 평균점수 <b>상위 ${N}건</b> 선정</p>
         <p class="kv"><b>2차 심사</b> · 회원 온라인투표, 후보 ${N}건 중 <b>선호 제안 ${c.투표선택수||2}건</b> 선택(각 1표)</p>
-        <p class="kv"><b>최종</b> · 위원회 점수와 회원투표 점수를 <b>5:5</b>로 합산해 1~3위·장려상 2건 선정</p>
+        <p class="kv"><b>최종</b> · 위원회 점수와 회원투표 점수를 <b>5:5</b>로 합산해 1~3위·장려상 1건 선정</p>
         <p class="hint" style="margin:6px 0 0">분야는 참여 편의를 위한 구분이며, 전체 제안을 통합하여 심사합니다.</p></div>
       <div class="card pad"><h2>시상</h2>
         <div class="sched">${CONFIG.PRIZES.map(([k,v])=>`<div><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join("")}</div></div>
       <div class="card pad"><h2>일정</h2>
         <div class="sched">${CONFIG.SCHEDULE.map(([k,v])=>`<div><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join("")}</div></div>
       <div class="card pad"><h2>참여 자격 · 문의</h2>
-        <p class="kv">2026년 서울시사회복지사협회 회원(2026년 회비납부자)</p>
-        <p class="kv">투표도 회비납부 회원만 가능하며 1인 1회</p>
+        <p class="kv"><b>제안</b> · 2026년 서울시사회복지사협회 회원(2026년 회비납부자)</p>
+        <div class="vnote"><b>회원 온라인투표도 2026년 회비납부 회원만 참여할 수 있습니다.</b><br>성함과 생년월일 6자리로 회비납부 명단을 확인하며, 1인 1회 참여합니다.</div>
         <p class="kv" style="margin-top:10px">${esc(CONFIG.CONTACT)}</p></div>
     </div>`;
 }
@@ -419,7 +438,7 @@ function viewApply(view){
       <dl class="info">
         <div><dt>참여대상</dt><dd>2026년 서울시사회복지사협회 회원(2026년 회비납부자)</dd></div>
         <div><dt>공모분야</dt><dd>교육·역량강화 / 회원서비스·복지 / 회원참여 프로그램 / 자유제안 <span class="muted">(분야별 별도 선정 없이 통합 심사)</span></dd></div>
-        <div><dt>선정방법</dt><dd>1차 참여위원회 심사(위원별 50점) 평균 상위 ${N}건 → 2차 회원 온라인투표(1인 ${c.투표선택수||2}건 선택) → 5:5 합산해 1~3위·장려상 2건 선정, 미선정 제안 참여상</dd></div>
+        <div><dt>선정방법</dt><dd>1차 참여위원회 심사(위원별 50점) 평균 상위 ${N}건 → 2차 회원 온라인투표(1인 ${c.투표선택수||2}건 선택) → 5:5 합산해 1~3위·장려상 1건 선정, 미선정 제안 참여상</dd></div>
         <div><dt>시상</dt><dd>${CONFIG.PRIZES.map(([k,v])=>`${esc(k)} ${esc(v)}`).join(" · ")}</dd></div>
         <div><dt>접수기간</dt><dd><b>${esc(CONFIG.PERIOD)}</b></dd></div>
         <div><dt>일정</dt><dd>${CONFIG.SCHEDULE.slice(1).map(([k,v])=>`${esc(k)} ${esc(v)}`).join(" · ")}</dd></div>
@@ -783,8 +802,8 @@ function viewVote(view){
 }
 function renderVoteAuth(view){
   view.innerHTML=`<div class="eyebrow">회원 투표</div><h1>본인 확인</h1>
-    <p class="lead">2026년 회비를 납부한 회원만 투표할 수 있습니다. 성함과 생년월일 6자리로 확인합니다.</p>
-    <div class="card pad" style="margin-top:20px;max-width:440px"><div id="vMsg"></div>
+    <div class="vnote" style="max-width:560px;margin-top:14px"><b>회원 온라인투표는 2026년 서울시사회복지사협회 회비를 납부한 회원만 참여할 수 있습니다.</b><br>입력하신 성함과 생년월일이 2026년 회비납부 회원 명단과 일치해야 투표 화면으로 넘어갑니다. 회비 납부 여부가 궁금하시면 ${esc(CONFIG.CONTACT)}로 문의해 주세요.</div>
+    <div class="card pad" style="margin-top:16px;max-width:440px"><div id="vMsg"></div>
       <div class="grid"><div><label class="req">성함</label><input id="vname" placeholder="홍길동"></div>
         <div><label class="req">생년월일 6자리</label><input id="vbirth" placeholder="예: 901231" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')memberVerify()"></div></div>
       <button class="btn block" style="margin-top:16px" id="vbtn" onclick="memberVerify()">확인하고 투표하기</button>
@@ -806,8 +825,10 @@ async function renderBallot(view){
   }else{ const r=await apiGet("ballot"); if(!r.ok){ view.innerHTML=`<div class="card pad"><div class="err">${esc(r.error||BUSY_MSG)}</div><button class="btn ghost sm" onclick="renderBallot($('#view'))">다시 시도</button></div>`; return; } items=r.items||[]; }
   const nf=(l,v)=>v?`<div class="nf"><span class="lbl">${l}</span><span class="nt">${nl(v)}</span></div>`:"";
   const K=STATE.config.투표선택수||2; PICKED=new Set();
-  view.innerHTML=`<div class="toolbar"><div><div class="eyebrow">회원 온라인투표 (2차 심사)</div><h1 style="margin:6px 0 0">선호하는 제안 ${K}건을 골라 주세요</h1></div></div>
+  setTimeout(()=>fillTurnout("ballotTurnout",(v,t)=>`<span class="pip"></span>지금까지 <b>${v.toLocaleString("ko-KR")}명</b> 참여 · 총 ${t.toLocaleString("ko-KR")}표 <span class="muted" style="font-weight:500">(제안별 득표수 비공개)</span>`),0);
+  view.innerHTML=`<div class="toolbar"><div><div class="eyebrow">회원 온라인투표 (2차 심사) · 2026년 회비납부 회원 전용</div><h1 style="margin:6px 0 0">선호하는 제안 ${K}건을 골라 주세요</h1></div></div>
     <p class="lead" style="margin-bottom:4px">1차 심사를 통과한 후보 ${items.length}건 중 <b>서로 다른 ${K}건</b>을 선택합니다(각 1표). 카드를 눌러 선택·해제하고 아래 버튼으로 제출하세요. 제출 후에는 변경할 수 없습니다.</p>
+    <div id="ballotTurnout" class="badge" style="margin-top:10px"></div>
     <div id="vMsg2"></div>
     <div class="deck" id="ballot">${items.map(it=>`<div class="note" data-id="${esc(it.신청ID)}" onclick="pickVote(this)" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pickVote(this);}">
         <span class="pin"></span><div class="check">✓</div>
@@ -833,7 +854,7 @@ async function castVote(){
   const ids=[...PICKED];
   const r=SUPA ? await sbRpc("mpb_cast_vote",{p_name:STATE.member.name,p_birth:STATE.member.birth,p_app_ids:ids})
                : await apiPost({action:"submitVote",name:STATE.member.name,birth:STATE.member.birth,appIds:ids});
-  if(r.ok){ $("#view").innerHTML=`<div class="card pad center" style="padding:48px 26px"><div class="badge" style="margin:0 auto"><span class="pip"></span>투표 완료</div><h1 style="margin-top:16px">소중한 한 표 감사합니다</h1><p class="muted">최종 결과는 협회 안내와 이 페이지에서 확인하실 수 있습니다.</p><button class="btn" onclick="STATE.member=null;go('')">처음으로</button></div>`; window.scrollTo(0,0); }
+  if(r.ok){ $("#view").innerHTML=`<div class="card pad center" style="padding:48px 26px"><div class="badge" style="margin:0 auto"><span class="pip"></span>투표 완료</div><h1 style="margin-top:16px">소중한 한 표 감사합니다</h1><div id="doneTurnout" class="muted" style="margin:6px 0 10px"></div><p class="muted">최종 결과는 11. 27.(금) 협회 홈페이지와 이 페이지에서 확인하실 수 있습니다.</p><button class="btn" onclick="STATE.member=null;go('')">처음으로</button></div>`; window.scrollTo(0,0); fillTurnout("doneTurnout",(v)=>`회원님을 포함해 지금까지 <b>${v.toLocaleString("ko-KR")}명</b>이 참여했습니다.`); }
   else{ btn.disabled=false; btn.textContent=`선택한 ${K}건에 투표하기`; $("#vMsg2").innerHTML=`<div class="err">${esc(r.error)}</div>`; window.scrollTo(0,0); }
 }
 async function renderFinalPublic(view){
@@ -843,7 +864,8 @@ async function renderFinalPublic(view){
   else { const r=await apiGet("results"); all=r.results||[]; }
   const res=all.filter(x=>x.시상);
   if(!res.length){ view.innerHTML=`<div class="card pad center"><h2>결과를 준비 중입니다</h2><p class="muted">잠시 후 다시 확인해 주세요.</p><button class="btn ghost" onclick="go('')">처음으로</button></div>`; return; }
-  view.innerHTML=`<div class="eyebrow">최종 결과</div><h1>선정된 제안</h1>
+  setTimeout(()=>fillTurnout("finalTurnout",turnoutLine),0);
+  view.innerHTML=`<div class="eyebrow">최종 결과</div><h1>선정된 제안</h1><div id="finalTurnout" class="badge" style="margin:4px 0 6px"></div>
     <p class="lead">참여위원회 1차 심사 점수(50점)와 회원 온라인투표 점수(50점)를 합산한 최종 결과입니다. 미선정 제안에는 참여상이 지급됩니다.</p>
     <div class="grid" style="margin:22px 0">${res.map(x=>`<div class="rankcard ${x.순위<=3?'r'+x.순위:'rx'}"><div class="no">${esc(x.시상)}</div>
       <div><span class="chipf">${esc(x.제안분야)}</span> <b style="font-size:17px">${esc(x.제안사업명)}</b><div class="hint" style="margin:2px 0 0">${esc(x.한줄소개||"")}</div></div>
@@ -880,7 +902,7 @@ function demoResults(){
   const r2=n=>Math.round(n*100)/100, vs=demoVoteStats();
   const rows=f.map(id=>{ const it=DEMO_DB.items.find(i=>i.신청ID===id); const s=Object.values(DEMO_DB.scores[id]||{}).map(x=>x.합계); const jp=s.length?s.reduce((a,b)=>a+b,0)/s.length:0; const votes=vs.counts[id]||0, rate=vs.voters?votes/vs.voters:0;
     return {신청ID:id,제안사업명:it.제안사업명,제안분야:it.제안분야,한줄소개:it.한줄소개,심사위원수:s.length,위원회점수:r2(jp),득표수:votes,득표율:r2(rate*100),투표점수:r2(rate*50),최종점수:r2(jp+rate*50),유효투표자:vs.voters}; }).sort((a,b)=>b.최종점수-a.최종점수);
-  rows.forEach((r,i)=>{ r.순위=i+1; r.시상=i<3?(i+1)+"위":(i<5?"장려상":""); }); return rows;
+  rows.forEach((r,i)=>{ r.순위=i+1; r.시상=i<3?(i+1)+"위":(i<4?"장려상":""); }); return rows;
 }
 async function mockApi(action,b){
   await new Promise(r=>setTimeout(r,250)); const D=DEMO_DB;
@@ -902,9 +924,10 @@ async function mockApi(action,b){
       return {ok:true,신청내역:[H].concat(D.items.map(it=>H.map(h=>it[h]||""))),심사집계:[["신청ID","제안사업명","위원회점수(평균/50)"]].concat(D.items.map(it=>{const s=Object.values(D.scores[it.신청ID]||{}).map(x=>x.합계);return [it.신청ID,it.제안사업명,s.length?s.reduce((a,c)=>a+c,0)/s.length:""]})),투표집계:[["신청ID","득표수","득표율"]].concat(D.finalists.map(id=>[id,vs.counts[id]||0,vs.voters?Math.round((vs.counts[id]||0)/vs.voters*1000)/10+"%":"0%"]))}; }
     case "setFinalists": D.finalists=b.ids||[]; return {ok:true};
     case "setStage": D.stage=b.stage; return {ok:true,stage:b.stage};
+    case "turnout": { const seen=new Set(D.votes.map(v=>v.성명+"|"+v.생년월일)); return {ok:true,voters:seen.size,total:D.votes.length}; }
     case "ballot": return {ok:true,items:D.stage!=="투표"?[]:D.finalists.map(id=>D.items.find(i=>i.신청ID===id)).filter(Boolean)};
     case "results": return {ok:true,results:demoResults()};
-    case "verifyMember": { const n=String(b.name||"").replace(/\s/g,""), bd=String(b.birth||""); if(!D.members.some(m=>m[0]===n&&m[1]===bd)) return {ok:false,error:"회비납부 회원 명단에서 확인되지 않습니다. (데모: 김서울/850312)"}; if(D.votes.some(v=>v.성명===n&&v.생년월일===bd)) return {ok:false,error:"이미 투표에 참여하셨습니다."}; return {ok:true}; }
+    case "verifyMember": { const n=String(b.name||"").replace(/\s/g,""), bd=String(b.birth||""); if(!D.members.some(m=>m[0]===n&&m[1]===bd)) return {ok:false,error:"2026년 회비납부 회원 명단에서 확인되지 않습니다. (데모: 김서울/850312)"}; if(D.votes.some(v=>v.성명===n&&v.생년월일===bd)) return {ok:false,error:"이미 투표에 참여하셨습니다."}; return {ok:true}; }
     case "submitVote": { const v=await mockApi("verifyMember",b); if(!v.ok) return v; const ids=[...new Set(b.appIds||[])]; if(ids.length!==D.K) return {ok:false,error:`서로 다른 제안 ${D.K}건을 선택해 주세요.`}; ids.forEach(id=>D.votes.push({성명:String(b.name).replace(/\s/g,""),생년월일:b.birth,신청ID:id})); return {ok:true}; }
     default: return {ok:false,error:"알 수 없는 요청"};
   }
